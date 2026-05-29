@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="description" content="App quản lý thu chi cá nhân, lưu dữ liệu trong trình duyệt.">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="QL Chi Tiêu">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Quản lý chi tiêu cá nhân</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <style>
+    :root {
+      --bg: #f4f7f6;
+      --surface: #ffffff;
+      --text: #1f2933;
+      --muted: #65758b;
+      --border: #d9e2ec;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --income: #12805c;
+      --income-bg: #e7f6ef;
+      --expense: #c2410c;
+      --expense-bg: #fff1e8;
+      --danger: #b42318;
+      --danger-bg: #fff4f2;
+      --safe: #087443;
+      --safe-bg: #ecfdf3;
+      --shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.5;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .page {
+      width: min(100%, 980px);
+      margin: 0 auto;
+      padding: 20px 14px 36px;
+    }
+
+    .app-header {
+      padding: 10px 2px 18px;
+    }
+
+    .app-header h1 {
+      margin: 0 0 6px;
+      font-size: 1.75rem;
+      line-height: 1.15;
+    }
+
+    .app-header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .install-button {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 42px;
+      border: 1px solid rgba(37, 99, 235, 0.25);
+      border-radius: 8px;
+      background: #ffffff;
+      color: var(--primary);
+      font-weight: 800;
+      cursor: pointer;
+      padding: 9px 13px;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+    }
+
+    .install-button.show {
+      display: inline-flex;
+    }
+
+    .install-button:hover {
+      border-color: var(--primary);
+      background: #f8fbff;
+    }
+
+    .install-icon {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+    }
+
+    .install-help {
+      display: none;
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .install-help.show {
+      display: block;
+      flex-basis: 100%;
+    }
+
+    .layout {
+      display: grid;
+      gap: 16px;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+
+    .panel h2 {
+      margin: 0 0 14px;
+      font-size: 1.12rem;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 13px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: #344054;
+      font-weight: 700;
+      font-size: 0.94rem;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 46px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #ffffff;
+      color: var(--text);
+      padding: 10px 12px;
+      outline: none;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+    }
+
+    .primary-button {
+      width: 100%;
+      min-height: 48px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--primary);
+      color: #ffffff;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.18s ease, transform 0.18s ease;
+    }
+
+    .primary-button:hover {
+      background: var(--primary-dark);
+    }
+
+    .primary-button:active {
+      transform: translateY(1px);
+    }
+
+    .form-actions {
+      display: grid;
+      gap: 10px;
+    }
+
+    .cancel-button {
+      display: none;
+      width: 100%;
+      min-height: 46px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #ffffff;
+      color: var(--muted);
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .cancel-button.show {
+      display: block;
+    }
+
+    .cancel-button:hover {
+      border-color: var(--danger);
+      color: var(--danger);
+      background: var(--danger-bg);
+    }
+
+    .error {
+      display: none;
+      margin: 2px 0 0;
+      color: var(--danger);
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .error.show {
+      display: block;
+    }
+
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .quick-button,
+    .secondary-button {
+      min-height: 38px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #ffffff;
+      color: var(--text);
+      font-weight: 800;
+      cursor: pointer;
+      padding: 7px 10px;
+    }
+
+    .quick-button:hover,
+    .secondary-button:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: #f8fbff;
+    }
+
+    .summary-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .summary-item {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 13px;
+      background: #fbfdff;
+    }
+
+    .summary-label {
+      margin: 0 0 4px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .summary-value {
+      margin: 0;
+      font-size: 1.4rem;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .income-text {
+      color: var(--income);
+    }
+
+    .expense-text {
+      color: var(--expense);
+    }
+
+    .balance-positive {
+      color: var(--primary);
+    }
+
+    .balance-negative {
+      color: var(--danger);
+    }
+
+    .limit-box {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .limit-status {
+      border-radius: 8px;
+      padding: 12px;
+      font-weight: 700;
+      font-size: 0.94rem;
+    }
+
+    .limit-status.safe {
+      background: var(--safe-bg);
+      color: var(--safe);
+      border: 1px solid #a9e7c5;
+    }
+
+    .limit-status.danger {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: 1px solid #f6b6ad;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 12px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e6edf5;
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--safe);
+      transition: width 0.22s ease, background 0.22s ease;
+    }
+
+    .progress-fill.warning {
+      background: var(--expense);
+    }
+
+    .progress-fill.danger {
+      background: var(--danger);
+    }
+
+    .filters {
+      display: grid;
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    .insight-grid {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .insight-item {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fbfdff;
+    }
+
+    .insight-item strong {
+      display: block;
+      margin-bottom: 2px;
+      font-size: 1.02rem;
+    }
+
+    .insight-item span {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .category-list {
+      display: grid;
+      gap: 10px;
+      margin: 14px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .category-row {
+      display: grid;
+      gap: 7px;
+    }
+
+    .category-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: #344054;
+      font-weight: 800;
+      font-size: 0.92rem;
+    }
+
+    .category-line span:last-child {
+      white-space: nowrap;
+    }
+
+    .category-bar {
+      height: 9px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #edf2f7;
+    }
+
+    .category-bar-fill {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--expense);
+    }
+
+    .list-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .list-header h2 {
+      margin: 0;
+    }
+
+    .count {
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .transactions {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .empty {
+      margin: 0;
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      padding: 18px 14px;
+      color: var(--muted);
+      text-align: center;
+      background: #fbfdff;
+    }
+
+    .transaction {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-left-width: 5px;
+      border-radius: 8px;
+      padding: 12px;
+      background: #ffffff;
+    }
+
+    .transaction.income {
+      border-left-color: var(--income);
+      background: var(--income-bg);
+    }
+
+    .transaction.expense {
+      border-left-color: var(--expense);
+      background: var(--expense-bg);
+    }
+
+    .transaction-main {
+      min-width: 0;
+    }
+
+    .transaction-name {
+      margin: 0 0 3px;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .transaction-meta {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .transaction-note {
+      margin: 4px 0 0;
+      color: #475569;
+      font-size: 0.88rem;
+      overflow-wrap: anywhere;
+    }
+
+    .transaction-side {
+      display: grid;
+      gap: 8px;
+      justify-items: end;
+    }
+
+    .transaction-amount {
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .transaction-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .edit-button,
+    .delete-button {
+      min-height: 34px;
+      border-radius: 8px;
+      background: #ffffff;
+      font-weight: 800;
+      cursor: pointer;
+      padding: 6px 10px;
+    }
+
+    .edit-button {
+      border: 1px solid rgba(37, 99, 235, 0.28);
+      color: var(--primary);
+    }
+
+    .delete-button {
+      border: 1px solid #f0b8ad;
+      color: var(--danger);
+    }
+
+    .edit-button:hover {
+      background: #f8fbff;
+      border-color: var(--primary);
+    }
+
+    .delete-button:hover {
+      background: var(--danger-bg);
+    }
+
+    @media (min-width: 760px) {
+      .page {
+        padding: 32px 22px 48px;
+      }
+
+      .app-header h1 {
+        font-size: 2.15rem;
+      }
+
+      .layout {
+        grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+        align-items: start;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .filters,
+      .insight-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .form-grid.two-cols {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .full-width {
+        grid-column: 1 / -1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="app-header">
+      <h1>Quản lý chi tiêu cá nhân</h1>
+      <p>Ghi lại khoản thu, khoản chi hằng ngày và theo dõi số dư của bạn.</p>
+      <div class="header-actions">
+        <button id="installButton" class="install-button" type="button">
+          <svg class="install-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+          Cài app
+        </button>
+        <p id="installHelp" class="install-help">Trên iPhone: bấm Chia sẻ trong Safari, rồi chọn Thêm vào Màn hình chính.</p>
+      </div>
+    </header>
+
+    <section class="layout" aria-label="Ứng dụng quản lý chi tiêu">
+      <div class="panel">
+        <h2 id="formTitle">Thêm khoản mới</h2>
+        <form id="transactionForm" class="form-grid two-cols" novalidate>
+          <label class="full-width">
+            Tên khoản tiền
+            <input id="nameInput" type="text" autocomplete="off" placeholder="Ví dụ: Ăn sáng">
+          </label>
+
+          <label>
+            Số tiền
+            <input id="amountInput" type="text" inputmode="numeric" autocomplete="off" placeholder="Ví dụ: 30.000">
+          </label>
+
+          <label>
+            Loại
+            <select id="typeInput">
+              <option value="expense">Chi</option>
+              <option value="income">Thu</option>
+            </select>
+          </label>
+
+          <label>
+            Danh mục
+            <select id="categoryInput"></select>
+          </label>
+
+          <label>
+            Ngày
+            <input id="dateInput" type="date">
+          </label>
+
+          <label class="full-width">
+            Ghi chú
+            <input id="noteInput" type="text" autocomplete="off" placeholder="Ví dụ: Quán gần công ty">
+          </label>
+
+          <div class="quick-actions full-width" aria-label="Chọn nhanh số tiền">
+            <button class="quick-button" type="button" data-amount="30000">30.000đ</button>
+            <button class="quick-button" type="button" data-amount="50000">50.000đ</button>
+            <button class="quick-button" type="button" data-amount="100000">100.000đ</button>
+          </div>
+
+          <p id="formError" class="error full-width" role="alert"></p>
+          <div class="form-actions full-width">
+            <button id="submitButton" class="primary-button" type="submit">Thêm khoản</button>
+            <button id="cancelEditButton" class="cancel-button" type="button">Hủy sửa</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="panel">
+        <h2>Tổng quan</h2>
+        <div class="summary-grid" aria-live="polite">
+          <div class="summary-item">
+            <p class="summary-label">Tổng thu</p>
+            <p id="totalIncome" class="summary-value income-text">0đ</p>
+          </div>
+          <div class="summary-item">
+            <p class="summary-label">Tổng chi</p>
+            <p id="totalExpense" class="summary-value expense-text">0đ</p>
+          </div>
+          <div class="summary-item">
+            <p class="summary-label">Số dư</p>
+            <p id="balance" class="summary-value balance-positive">0đ</p>
+          </div>
+        </div>
+
+        <div class="limit-box">
+          <label>
+            Hạn mức chi tháng
+            <input id="limitInput" type="text" inputmode="numeric" autocomplete="off" placeholder="Ví dụ: 5.000.000">
+          </label>
+          <div class="progress-track" aria-hidden="true">
+            <div id="limitProgress" class="progress-fill"></div>
+          </div>
+          <div id="limitStatus" class="limit-status safe" role="status"></div>
+        </div>
+
+        <div class="insight-grid" aria-live="polite">
+          <div class="insight-item">
+            <strong id="topCategory">Chưa có dữ liệu</strong>
+            <span>Danh mục chi nhiều nhất</span>
+          </div>
+          <div class="insight-item">
+            <strong id="dailyAverage">0đ</strong>
+            <span>Chi trung bình mỗi ngày</span>
+          </div>
+          <div class="insight-item">
+            <strong id="remainingBudget">0đ</strong>
+            <span>Còn lại theo hạn mức</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel full-width">
+        <div class="list-header">
+          <h2>Sổ giao dịch</h2>
+          <span id="transactionCount" class="count">0 khoản</span>
+        </div>
+        <div class="filters">
+          <label>
+            Tháng xem
+            <input id="monthFilter" type="month">
+          </label>
+          <label>
+            Lọc loại
+            <select id="typeFilter">
+              <option value="all">Tất cả</option>
+              <option value="expense">Chi</option>
+              <option value="income">Thu</option>
+            </select>
+          </label>
+          <button id="exportButton" class="secondary-button" type="button">Xuất CSV</button>
+        </div>
+        <h2>Chi theo danh mục</h2>
+        <p id="categoryEmpty" class="empty">Chưa có khoản chi nào trong tháng đang xem.</p>
+        <ul id="categoryBreakdown" class="category-list"></ul>
+        <h2 style="margin-top: 18px;">Khoản đã nhập</h2>
+        <p id="emptyState" class="empty">Chưa có khoản nào. Hãy thêm khoản thu hoặc chi đầu tiên.</p>
+        <ul id="transactionList" class="transactions"></ul>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "qlct_transactions";
+    const LIMIT_KEY = "qlct_monthly_limit";
+    const CATEGORIES = {
+      expense: [
+        ["food", "Ăn uống"],
+        ["shopping", "Mua sắm"],
+        ["transport", "Di chuyển"],
+        ["home", "Nhà cửa"],
+        ["electric_bill", "HĐ Điện"],
+        ["water_bill", "HĐ Nước"],
+        ["gas_bill", "HĐ Ga"],
+        ["rice_bill", "HĐ Gạo"],
+        ["health", "Sức khỏe"],
+        ["education", "Học tập"],
+        ["family", "Gia đình"],
+        ["entertainment", "Giải trí"],
+        ["other_expense", "Chi khác"]
+      ],
+      income: [
+        ["salary", "Lương"],
+        ["bonus", "Thưởng"],
+        ["business", "Kinh doanh"],
+        ["gift", "Được tặng"],
+        ["investment", "Đầu tư"],
+        ["other_income", "Thu khác"]
+      ]
+    };
+    const CATEGORY_LABELS = Object.fromEntries([...CATEGORIES.expense, ...CATEGORIES.income]);
+
+    const form = document.getElementById("transactionForm");
+    const nameInput = document.getElementById("nameInput");
+    const amountInput = document.getElementById("amountInput");
+    const typeInput = document.getElementById("typeInput");
+    const categoryInput = document.getElementById("categoryInput");
+    const dateInput = document.getElementById("dateInput");
+    const noteInput = document.getElementById("noteInput");
+    const formTitle = document.getElementById("formTitle");
+    const submitButton = document.getElementById("submitButton");
+    const cancelEditButton = document.getElementById("cancelEditButton");
+    const formError = document.getElementById("formError");
+    const installButton = document.getElementById("installButton");
+    const installHelp = document.getElementById("installHelp");
+    const totalIncomeEl = document.getElementById("totalIncome");
+    const totalExpenseEl = document.getElementById("totalExpense");
+    const balanceEl = document.getElementById("balance");
+    const limitInput = document.getElementById("limitInput");
+    const limitProgress = document.getElementById("limitProgress");
+    const limitStatus = document.getElementById("limitStatus");
+    const topCategoryEl = document.getElementById("topCategory");
+    const dailyAverageEl = document.getElementById("dailyAverage");
+    const remainingBudgetEl = document.getElementById("remainingBudget");
+    const monthFilter = document.getElementById("monthFilter");
+    const typeFilter = document.getElementById("typeFilter");
+    const exportButton = document.getElementById("exportButton");
+    const categoryEmpty = document.getElementById("categoryEmpty");
+    const categoryBreakdown = document.getElementById("categoryBreakdown");
+    const transactionList = document.getElementById("transactionList");
+    const emptyState = document.getElementById("emptyState");
+    const transactionCount = document.getElementById("transactionCount");
+
+    let memoryStore = {};
+    let transactions = loadTransactions();
+    let deferredInstallPrompt = null;
+    let editingTransactionId = null;
+
+    const currencyFormatter = new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+      maximumFractionDigits: 0
+    });
+
+    function formatMoney(value) {
+      return currencyFormatter.format(value).replace(/\s?₫/, "đ");
+    }
+
+    function formatInputMoney(value) {
+      const digits = String(value || "").replace(/\D/g, "");
+      if (!digits) return "";
+      return new Intl.NumberFormat("vi-VN").format(Number(digits));
+    }
+
+    function parseMoneyInput(value) {
+      const digits = String(value || "").replace(/\D/g, "");
+      return digits ? Number(digits) : 0;
+    }
+
+    function formatMoneyField(input) {
+      input.value = formatInputMoney(input.value);
+    }
+
+    function readStorage(key, fallbackValue) {
+      try {
+        const value = localStorage.getItem(key);
+        return value === null ? fallbackValue : value;
+      } catch {
+        return Object.prototype.hasOwnProperty.call(memoryStore, key) ? memoryStore[key] : fallbackValue;
+      }
+    }
+
+    function writeStorage(key, value) {
+      try {
+        localStorage.setItem(key, value);
+      } catch {
+        memoryStore[key] = value;
+      }
+    }
+
+    function getTodayKey() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function getMonthKey(value) {
+      const dateKey = value || getTodayKey();
+      return dateKey.slice(0, 7);
+    }
+
+    function dateFromTransaction(item) {
+      if (item.date) return item.date;
+      if (!item.createdAt) return getTodayKey();
+
+      const date = new Date(item.createdAt);
+      if (Number.isNaN(date.getTime())) return getTodayKey();
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function normalizeTransaction(item) {
+      const type = item.type === "income" ? "income" : "expense";
+      const fallbackCategory = type === "income" ? "other_income" : "other_expense";
+      const amount = typeof item.amount === "number" ? item.amount : parseMoneyInput(item.amount);
+
+      return {
+        id: item.id || `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        name: String(item.name || "Khoản chưa đặt tên"),
+        amount: Number.isFinite(amount) ? amount : 0,
+        type,
+        category: CATEGORY_LABELS[item.category] ? item.category : fallbackCategory,
+        note: String(item.note || ""),
+        date: dateFromTransaction(item),
+        createdAt: item.createdAt || new Date().toISOString()
+      };
+    }
+
+    function loadTransactions() {
+      try {
+        const stored = JSON.parse(readStorage(STORAGE_KEY, "[]"));
+        return Array.isArray(stored) ? stored.map(normalizeTransaction) : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveTransactions() {
+      writeStorage(STORAGE_KEY, JSON.stringify(transactions));
+    }
+
+    function saveLimit(value) {
+      writeStorage(LIMIT_KEY, String(value || ""));
+    }
+
+    function getSelectedMonth() {
+      return monthFilter.value || getMonthKey(getTodayKey());
+    }
+
+    function isInSelectedMonth(item) {
+      return getMonthKey(item.date) === getSelectedMonth();
+    }
+
+    function getMonthTransactions() {
+      return transactions.filter(isInSelectedMonth);
+    }
+
+    function getVisibleTransactions() {
+      const selectedType = typeFilter.value;
+      return getMonthTransactions().filter((item) => selectedType === "all" || item.type === selectedType);
+    }
+
+    function getMonthlyExpense() {
+      return getMonthTransactions()
+        .filter((item) => item.type === "expense")
+        .reduce((sum, item) => sum + item.amount, 0);
+    }
+
+    function getCategoryTotals() {
+      const totals = {};
+      getMonthTransactions()
+        .filter((item) => item.type === "expense")
+        .forEach((item) => {
+          totals[item.category] = (totals[item.category] || 0) + item.amount;
+        });
+
+      return Object.entries(totals)
+        .map(([category, amount]) => ({ category, amount }))
+        .sort((a, b) => b.amount - a.amount);
+    }
+
+    function renderSummary() {
+      const monthTransactions = getMonthTransactions();
+      const totalIncome = monthTransactions
+        .filter((item) => item.type === "income")
+        .reduce((sum, item) => sum + item.amount, 0);
+      const totalExpense = monthTransactions
+        .filter((item) => item.type === "expense")
+        .reduce((sum, item) => sum + item.amount, 0);
+      const balance = totalIncome - totalExpense;
+
+      totalIncomeEl.textContent = formatMoney(totalIncome);
+      totalExpenseEl.textContent = formatMoney(totalExpense);
+      balanceEl.textContent = formatMoney(balance);
+      balanceEl.classList.toggle("balance-negative", balance < 0);
+      balanceEl.classList.toggle("balance-positive", balance >= 0);
+
+      renderLimitStatus();
+      renderInsights(totalExpense);
+      renderCategoryBreakdown();
+    }
+
+    function renderLimitStatus() {
+      const limit = parseMoneyInput(limitInput.value);
+      const monthlyExpense = getMonthlyExpense();
+      const percent = limit > 0 ? Math.min((monthlyExpense / limit) * 100, 100) : 0;
+      limitProgress.style.width = `${percent}%`;
+      limitProgress.classList.toggle("warning", percent >= 80 && percent < 100);
+      limitProgress.classList.toggle("danger", percent >= 100);
+
+      if (!limit) {
+        limitStatus.className = "limit-status safe";
+        limitStatus.textContent = "Nhập hạn mức chi tháng để app nhắc bạn khi chi quá mức.";
+        return;
+      }
+
+      if (monthlyExpense > limit) {
+        limitStatus.className = "limit-status danger";
+        limitStatus.textContent = `Đã vượt hạn mức tháng ${formatMoney(monthlyExpense - limit)}. Tổng chi tháng này: ${formatMoney(monthlyExpense)}.`;
+        return;
+      }
+
+      limitStatus.className = "limit-status safe";
+      limitStatus.textContent = `Bạn còn có thể chi ${formatMoney(limit - monthlyExpense)} trong tháng này.`;
+    }
+
+    function renderInsights(monthlyExpense) {
+      const categoryTotals = getCategoryTotals();
+      const limit = parseMoneyInput(limitInput.value);
+      const today = new Date();
+      const selectedMonth = getSelectedMonth();
+      const isCurrentMonth = selectedMonth === getMonthKey(getTodayKey());
+      const dayCount = isCurrentMonth ? today.getDate() : new Date(Number(selectedMonth.slice(0, 4)), Number(selectedMonth.slice(5, 7)), 0).getDate();
+      const remaining = limit ? limit - monthlyExpense : 0;
+
+      topCategoryEl.textContent = categoryTotals.length ? `${CATEGORY_LABELS[categoryTotals[0].category]} - ${formatMoney(categoryTotals[0].amount)}` : "Chưa có dữ liệu";
+      dailyAverageEl.textContent = formatMoney(monthlyExpense / Math.max(dayCount, 1));
+      remainingBudgetEl.textContent = limit ? formatMoney(remaining) : "Chưa đặt";
+      remainingBudgetEl.className = remaining < 0 ? "balance-negative" : "balance-positive";
+    }
+
+    function renderCategoryBreakdown() {
+      const categoryTotals = getCategoryTotals();
+      const maxAmount = categoryTotals.length ? categoryTotals[0].amount : 0;
+      categoryBreakdown.innerHTML = "";
+      categoryEmpty.style.display = categoryTotals.length ? "none" : "block";
+
+      categoryTotals.forEach((item) => {
+        const li = document.createElement("li");
+        li.className = "category-row";
+        const percent = maxAmount ? Math.round((item.amount / maxAmount) * 100) : 0;
+        li.innerHTML = `
+          <div class="category-line">
+            <span>${CATEGORY_LABELS[item.category] || "Khác"}</span>
+            <span>${formatMoney(item.amount)}</span>
+          </div>
+          <div class="category-bar" aria-hidden="true">
+            <div class="category-bar-fill" style="width: ${percent}%"></div>
+          </div>
+        `;
+        categoryBreakdown.appendChild(li);
+      });
+    }
+
+    function renderTransactions() {
+      const visibleTransactions = getVisibleTransactions();
+      transactionList.innerHTML = "";
+      emptyState.style.display = visibleTransactions.length ? "none" : "block";
+      emptyState.textContent = transactions.length ? "Không có khoản nào khớp bộ lọc hiện tại." : "Chưa có khoản nào. Hãy thêm khoản thu hoặc chi đầu tiên.";
+      transactionCount.textContent = `${visibleTransactions.length} khoản`;
+
+      visibleTransactions
+        .slice()
+        .sort((a, b) => b.date.localeCompare(a.date) || new Date(b.createdAt) - new Date(a.createdAt))
+        .forEach((item) => {
+          const li = document.createElement("li");
+          const isIncome = item.type === "income";
+          li.className = `transaction ${isIncome ? "income" : "expense"}`;
+
+          const dateText = new Intl.DateTimeFormat("vi-VN", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric"
+          }).format(new Date(`${item.date}T12:00:00`));
+          const categoryLabel = CATEGORY_LABELS[item.category] || "Khác";
+
+          li.innerHTML = `
+            <div class="transaction-main">
+              <p class="transaction-name"></p>
+              <p class="transaction-meta">${isIncome ? "Thu" : "Chi"} • ${categoryLabel} • ${dateText}</p>
+              ${item.note ? `<p class="transaction-note">${escapeHtml(item.note)}</p>` : ""}
+            </div>
+            <div class="transaction-side">
+              <span class="transaction-amount ${isIncome ? "income-text" : "expense-text"}">${isIncome ? "+" : "-"}${formatMoney(item.amount)}</span>
+              <div class="transaction-actions">
+                <button class="edit-button" type="button" data-id="${item.id}" aria-label="Sửa khoản ${escapeHtml(item.name)}">Sửa</button>
+                <button class="delete-button" type="button" data-id="${item.id}" aria-label="Xóa khoản ${escapeHtml(item.name)}">Xóa</button>
+              </div>
+            </div>
+          `;
+
+          li.querySelector(".transaction-name").textContent = `${item.name} - ${formatMoney(item.amount)}`;
+          transactionList.appendChild(li);
+        });
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function render() {
+      renderSummary();
+      renderTransactions();
+    }
+
+    function populateCategoryOptions() {
+      const currentValue = categoryInput.value;
+      const options = CATEGORIES[typeInput.value] || CATEGORIES.expense;
+      categoryInput.innerHTML = "";
+
+      options.forEach(([value, label]) => {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = label;
+        categoryInput.appendChild(option);
+      });
+
+      if (options.some(([value]) => value === currentValue)) {
+        categoryInput.value = currentValue;
+      } else if (options.length) {
+        categoryInput.value = options[0][0];
+      }
+    }
+
+    function exportCsv() {
+      const rows = [
+        ["Ngay", "Loai", "Danh muc", "Ten khoan", "So tien", "Ghi chu"],
+        ...getVisibleTransactions().map((item) => [
+          item.date,
+          item.type === "income" ? "Thu" : "Chi",
+          CATEGORY_LABELS[item.category] || "Khac",
+          item.name,
+          item.amount,
+          item.note || ""
+        ])
+      ];
+      const csv = rows
+        .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+        .join("\n");
+      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `so-thu-chi-${getSelectedMonth()}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function resetTransactionForm(shouldFocus = true) {
+      editingTransactionId = null;
+      form.reset();
+      typeInput.value = "expense";
+      populateCategoryOptions();
+      dateInput.value = getTodayKey();
+      formTitle.textContent = "Thêm khoản mới";
+      submitButton.textContent = "Thêm khoản";
+      cancelEditButton.classList.remove("show");
+      clearError();
+
+      if (shouldFocus) {
+        nameInput.focus();
+      }
+    }
+
+    function startEditTransaction(id) {
+      const item = transactions.find((transaction) => transaction.id === id);
+      if (!item) return;
+
+      editingTransactionId = id;
+      nameInput.value = item.name;
+      amountInput.value = formatInputMoney(item.amount);
+      typeInput.value = item.type;
+      populateCategoryOptions();
+      categoryInput.value = item.category;
+      dateInput.value = item.date;
+      noteInput.value = item.note || "";
+      formTitle.textContent = "Sửa khoản đã nhập";
+      submitButton.textContent = "Lưu thay đổi";
+      cancelEditButton.classList.add("show");
+      clearError();
+      form.scrollIntoView({ behavior: "smooth", block: "start" });
+      nameInput.focus();
+    }
+
+    function showError(message) {
+      formError.textContent = message;
+      formError.classList.add("show");
+    }
+
+    function clearError() {
+      formError.textContent = "";
+      formError.classList.remove("show");
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      clearError();
+
+      const name = nameInput.value.trim();
+      const amount = parseMoneyInput(amountInput.value);
+      const type = typeInput.value;
+      const category = categoryInput.value;
+      const date = dateInput.value;
+      const note = noteInput.value.trim();
+
+      if (!name) {
+        showError("Vui lòng nhập tên khoản tiền.");
+        nameInput.focus();
+        return;
+      }
+
+      if (!Number.isFinite(amount) || amount <= 0) {
+        showError("Vui lòng nhập số tiền lớn hơn 0.");
+        amountInput.focus();
+        return;
+      }
+
+      if (!date) {
+        showError("Vui lòng chọn ngày phát sinh.");
+        dateInput.focus();
+        return;
+      }
+
+      const nextTransaction = {
+        name,
+        amount,
+        type,
+        category,
+        note,
+        date
+      };
+
+      if (editingTransactionId) {
+        transactions = transactions.map((item) => item.id === editingTransactionId ? {
+          ...item,
+          ...nextTransaction,
+          updatedAt: new Date().toISOString()
+        } : item);
+      } else {
+        transactions.push({
+          id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+          ...nextTransaction,
+          createdAt: new Date().toISOString()
+        });
+      }
+
+      saveTransactions();
+      monthFilter.value = getMonthKey(date);
+      resetTransactionForm(false);
+      render();
+    });
+
+    typeInput.addEventListener("change", populateCategoryOptions);
+    cancelEditButton.addEventListener("click", () => resetTransactionForm());
+
+    document.querySelectorAll(".quick-button").forEach((button) => {
+      button.addEventListener("click", () => {
+        amountInput.value = formatInputMoney(button.dataset.amount);
+        amountInput.focus();
+      });
+    });
+
+    amountInput.addEventListener("input", () => formatMoneyField(amountInput));
+
+    limitInput.addEventListener("input", () => {
+      formatMoneyField(limitInput);
+      const limit = parseMoneyInput(limitInput.value);
+      saveLimit(limit > 0 ? limit : "");
+      renderSummary();
+    });
+
+    monthFilter.addEventListener("input", render);
+    typeFilter.addEventListener("change", render);
+    exportButton.addEventListener("click", exportCsv);
+
+    transactionList.addEventListener("click", (event) => {
+      const editButton = event.target.closest(".edit-button");
+      if (editButton) {
+        startEditTransaction(editButton.dataset.id);
+        return;
+      }
+
+      const button = event.target.closest(".delete-button");
+      if (!button) return;
+
+      transactions = transactions.filter((item) => item.id !== button.dataset.id);
+      if (editingTransactionId === button.dataset.id) {
+        resetTransactionForm(false);
+      }
+      saveTransactions();
+      render();
+    });
+
+    window.addEventListener("beforeinstallprompt", (event) => {
+      event.preventDefault();
+      deferredInstallPrompt = event;
+      installButton.classList.add("show");
+    });
+
+    installButton.addEventListener("click", async () => {
+      if (!deferredInstallPrompt) {
+        installHelp.classList.add("show");
+        return;
+      }
+
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      installButton.classList.remove("show");
+    });
+
+    window.addEventListener("appinstalled", () => {
+      deferredInstallPrompt = null;
+      installButton.classList.remove("show");
+      installHelp.classList.remove("show");
+    });
+
+    if (/iphone|ipad|ipod/i.test(window.navigator.userAgent)) {
+      installHelp.classList.add("show");
+    }
+
+    if ("serviceWorker" in navigator && window.location.protocol !== "file:") {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js").catch(() => {});
+      });
+    }
+
+    populateCategoryOptions();
+    dateInput.value = getTodayKey();
+    monthFilter.value = getMonthKey(getTodayKey());
+    limitInput.value = formatInputMoney(readStorage(LIMIT_KEY, ""));
+    render();
+  </script>
+</body>
+</html>
