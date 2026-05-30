@@ -131,12 +131,41 @@
       background: var(--surface);
       box-shadow: var(--shadow);
       overflow: hidden;
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .dashboard-card.state-positive {
+      border-color: rgba(18, 128, 92, 0.28);
+      background: #f6fffb;
+    }
+
+    .dashboard-card.state-low {
+      border-color: rgba(194, 65, 12, 0.34);
+      background: #fff9f3;
+    }
+
+    .dashboard-card.state-negative {
+      border-color: rgba(180, 35, 24, 0.34);
+      background: #fff7f6;
     }
 
     .balance-hero {
       padding: 16px;
       border-bottom: 1px solid var(--border);
       background: #fbfdff;
+      transition: background 0.2s ease;
+    }
+
+    .dashboard-card.state-positive .balance-hero {
+      background: var(--safe-bg);
+    }
+
+    .dashboard-card.state-low .balance-hero {
+      background: #fff7df;
+    }
+
+    .dashboard-card.state-negative .balance-hero {
+      background: var(--danger-bg);
     }
 
     .balance-label {
@@ -619,6 +648,73 @@
       gap: 14px;
     }
 
+    .greeting-card {
+      display: grid;
+      gap: 14px;
+    }
+
+    .greeting-preview {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 13px;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fbfdff;
+      padding: 14px;
+    }
+
+    .avatar-preview {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 64px;
+      height: 64px;
+      overflow: hidden;
+      border-radius: 50%;
+      background: #e8f1ff;
+      color: var(--primary);
+      font-weight: 900;
+      border: 2px solid rgba(37, 99, 235, 0.22);
+    }
+
+    .avatar-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .greeting-text {
+      margin: 0;
+      font-weight: 900;
+      overflow-wrap: anywhere;
+    }
+
+    .greeting-subtext {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .greeting-controls {
+      display: grid;
+      gap: 10px;
+    }
+
+    .reminder-banner {
+      display: none;
+      border: 1px solid #f6b6ad;
+      border-radius: 8px;
+      background: var(--danger-bg);
+      color: var(--danger);
+      padding: 12px;
+      font-weight: 800;
+    }
+
+    .reminder-banner.show {
+      display: block;
+    }
+
     .transaction {
       display: grid;
       grid-template-columns: 1fr auto;
@@ -887,6 +983,7 @@
 
       .filters,
       .insight-grid,
+      .greeting-controls,
       .report-summary {
         grid-template-columns: repeat(3, minmax(0, 1fr));
       }
@@ -915,7 +1012,7 @@
         </button>
         <p id="installHelp" class="install-help">Trên iPhone: bấm Chia sẻ trong Safari, rồi chọn Thêm vào Màn hình chính.</p>
       </div>
-      <section class="dashboard-card home-only" aria-label="Tổng quan nhanh">
+      <section id="dashboardCard" class="dashboard-card home-only" aria-label="Tổng quan nhanh">
         <div class="balance-hero">
           <p class="balance-label">
             <span>Số dư còn lại</span>
@@ -937,10 +1034,37 @@
     </header>
 
     <section id="homeView" class="app-view active single-view" data-view="home" aria-label="Trang chủ">
-      <div class="panel">
-        <div class="list-header">
-          <h2>Nhắc việc hôm nay</h2>
-          <span id="homeDebtCount" class="count">0 mục</span>
+      <div class="panel greeting-card">
+        <div class="greeting-preview">
+          <div id="avatarPreview" class="avatar-preview">QL</div>
+          <div>
+            <p id="greetingDisplay" class="greeting-text">Chào ngày mới</p>
+            <p id="greetingStatus" class="greeting-subtext">Sẵn sàng ghi lại thu chi hôm nay.</p>
+          </div>
+        </div>
+        <div id="inactivityReminder" class="reminder-banner" role="alert"></div>
+        <div class="greeting-controls">
+          <label>
+            Câu chào
+            <input id="greetingInput" type="text" autocomplete="off" placeholder="Ví dụ: Chào ông chủ">
+          </label>
+          <label>
+            Màu chữ
+            <input id="greetingColorInput" type="color" value="#1f2933">
+          </label>
+          <label>
+            Cỡ chữ
+            <select id="greetingSizeInput">
+              <option value="22">Nhỏ</option>
+              <option value="28">Vừa</option>
+              <option value="34">To</option>
+            </select>
+          </label>
+          <label class="full-width">
+            Ảnh đại diện
+            <input id="avatarInput" type="file" accept="image/*">
+          </label>
+          <button id="notificationButton" class="secondary-button full-width" type="button">Bật nhắc nhập liệu</button>
         </div>
         <div class="insight-grid" aria-live="polite">
           <div class="insight-item">
@@ -1178,6 +1302,9 @@
     const STORAGE_KEY = "qlct_transactions";
     const LIMIT_KEY = "qlct_monthly_limit";
     const LOAN_STORAGE_KEY = "qlct_loans";
+    const GREETING_STORAGE_KEY = "qlct_greeting_settings";
+    const LAST_ENTRY_KEY = "qlct_last_entry_date";
+    const LAST_REMINDER_KEY = "qlct_last_inactivity_reminder";
     const CATEGORIES = {
       expense: [
         ["food", "Ăn uống"],
@@ -1222,6 +1349,7 @@
     const fabAddButton = document.getElementById("fabAddButton");
     const installButton = document.getElementById("installButton");
     const installHelp = document.getElementById("installHelp");
+    const dashboardCard = document.getElementById("dashboardCard");
     const currentMonthLabel = document.getElementById("currentMonthLabel");
     const totalIncomeEl = document.getElementById("totalIncome");
     const totalExpenseEl = document.getElementById("totalExpense");
@@ -1248,10 +1376,18 @@
     const homeBorrowTotal = document.getElementById("homeBorrowTotal");
     const homeLendTotal = document.getElementById("homeLendTotal");
     const homeDueSoon = document.getElementById("homeDueSoon");
-    const homeDebtCount = document.getElementById("homeDebtCount");
     const homeRecentCount = document.getElementById("homeRecentCount");
     const homeRecentEmpty = document.getElementById("homeRecentEmpty");
     const homeRecentList = document.getElementById("homeRecentList");
+    const avatarPreview = document.getElementById("avatarPreview");
+    const greetingDisplay = document.getElementById("greetingDisplay");
+    const greetingStatus = document.getElementById("greetingStatus");
+    const greetingInput = document.getElementById("greetingInput");
+    const greetingColorInput = document.getElementById("greetingColorInput");
+    const greetingSizeInput = document.getElementById("greetingSizeInput");
+    const avatarInput = document.getElementById("avatarInput");
+    const notificationButton = document.getElementById("notificationButton");
+    const inactivityReminder = document.getElementById("inactivityReminder");
     const loanForm = document.getElementById("loanForm");
     const loanTypeInput = document.getElementById("loanTypeInput");
     const loanStatusInput = document.getElementById("loanStatusInput");
@@ -1314,12 +1450,65 @@
       }
     }
 
+    function loadGreetingSettings() {
+      try {
+        return {
+          text: "Chào ngày mới",
+          color: "#1f2933",
+          size: "28",
+          avatar: "",
+          ...JSON.parse(readStorage(GREETING_STORAGE_KEY, "{}"))
+        };
+      } catch {
+        return { text: "Chào ngày mới", color: "#1f2933", size: "28", avatar: "" };
+      }
+    }
+
+    function saveGreetingSettings() {
+      writeStorage(GREETING_STORAGE_KEY, JSON.stringify({
+        text: greetingInput.value.trim() || "Chào ngày mới",
+        color: greetingColorInput.value || "#1f2933",
+        size: greetingSizeInput.value || "28",
+        avatar: avatarPreview.dataset.avatar || ""
+      }));
+    }
+
+    function applyGreetingSettings(settings = loadGreetingSettings()) {
+      greetingInput.value = settings.text;
+      greetingColorInput.value = settings.color;
+      greetingSizeInput.value = settings.size;
+      greetingDisplay.textContent = settings.text;
+      greetingDisplay.style.color = settings.color;
+      greetingDisplay.style.fontSize = `${settings.size}px`;
+      avatarPreview.dataset.avatar = settings.avatar || "";
+      avatarPreview.innerHTML = settings.avatar ? `<img src="${settings.avatar}" alt="Ảnh đại diện">` : "QL";
+    }
+
     function getTodayKey() {
       const now = new Date();
       const year = now.getFullYear();
       const month = String(now.getMonth() + 1).padStart(2, "0");
       const day = String(now.getDate()).padStart(2, "0");
       return `${year}-${month}-${day}`;
+    }
+
+    function diffDays(fromDateKey, toDateKey = getTodayKey()) {
+      if (!fromDateKey) return Infinity;
+      const from = new Date(`${fromDateKey}T12:00:00`);
+      const to = new Date(`${toDateKey}T12:00:00`);
+      return Math.floor((to - from) / 86400000);
+    }
+
+    function markDataEntry() {
+      writeStorage(LAST_ENTRY_KEY, getTodayKey());
+    }
+
+    function getLatestSavedEntryDate() {
+      const dates = [
+        ...transactions.map((item) => item.date),
+        ...loans.map((item) => (item.createdAt ? dateFromTransaction({ createdAt: item.createdAt }) : item.dueDate))
+      ].filter(Boolean).sort();
+      return dates.length ? dates[dates.length - 1] : "";
     }
 
     function getMonthKey(value) {
@@ -1508,9 +1697,14 @@
       totalExpenseEl.textContent = formatMoney(totalExpense);
       balanceEl.textContent = formatMoney(balance);
       currentMonthLabel.textContent = formatMonthLabel(getSelectedMonth());
-      balanceEl.classList.toggle("balance-negative", balance < 0);
-      balanceEl.classList.toggle("balance-low", balance >= 0 && totalIncome > 0 && balance / totalIncome < 0.2);
-      balanceEl.classList.toggle("balance-positive", balance >= 0 && (!totalIncome || balance / totalIncome >= 0.2));
+      const isNegative = balance < 0;
+      const isLow = balance >= 0 && totalIncome > 0 && balance / totalIncome < 0.2;
+      balanceEl.classList.toggle("balance-negative", isNegative);
+      balanceEl.classList.toggle("balance-low", isLow);
+      balanceEl.classList.toggle("balance-positive", balance >= 0 && !isLow);
+      dashboardCard.classList.toggle("state-negative", isNegative);
+      dashboardCard.classList.toggle("state-low", isLow);
+      dashboardCard.classList.toggle("state-positive", !isNegative && !isLow);
 
       renderLimitStatus();
       renderInsights(totalExpense);
@@ -1626,6 +1820,74 @@
       });
     }
 
+    function playReminderSound() {
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        oscillator.type = "sine";
+        oscillator.frequency.value = 880;
+        gain.gain.setValueAtTime(0.001, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.18, audioContext.currentTime + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.35);
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.38);
+      } catch {}
+    }
+
+    function notifyInactivity(days) {
+      const message = `Đã ${days} ngày bạn chưa nhập dữ liệu. Hãy ghi lại thu/chi hôm nay.`;
+      const shouldSignal = readStorage(LAST_REMINDER_KEY, "") !== getTodayKey();
+      inactivityReminder.textContent = message;
+      inactivityReminder.classList.add("show");
+      greetingStatus.textContent = "Bạn có khoản cần cập nhật hôm nay.";
+
+      if (shouldSignal && "vibrate" in navigator) {
+        navigator.vibrate([220, 120, 220]);
+      }
+      if (shouldSignal) {
+        playReminderSound();
+      }
+
+      if ("Notification" in window && Notification.permission === "granted" && shouldSignal) {
+        new Notification("Nhắc nhập dữ liệu", {
+          body: message,
+          icon: "icons/icon-192.png"
+        });
+      }
+      if (shouldSignal) {
+        writeStorage(LAST_REMINDER_KEY, getTodayKey());
+      }
+    }
+
+    function checkInactivityReminder() {
+      let lastEntryDate = readStorage(LAST_ENTRY_KEY, "");
+      if (!lastEntryDate) {
+        lastEntryDate = getLatestSavedEntryDate();
+        if (lastEntryDate) {
+          writeStorage(LAST_ENTRY_KEY, lastEntryDate);
+        }
+      }
+      if (!lastEntryDate) {
+        inactivityReminder.classList.remove("show");
+        greetingStatus.textContent = "Sẵn sàng ghi lại thu chi hôm nay.";
+        return;
+      }
+      const inactiveDays = diffDays(lastEntryDate);
+
+      if (inactiveDays >= 2) {
+        notifyInactivity(inactiveDays);
+        return;
+      }
+
+      inactivityReminder.classList.remove("show");
+      greetingStatus.textContent = lastEntryDate
+        ? `Lần nhập gần nhất: ${new Intl.DateTimeFormat("vi-VN").format(new Date(`${lastEntryDate}T12:00:00`))}`
+        : "Sẵn sàng ghi lại thu chi hôm nay.";
+    }
+
     function renderHome() {
       const pendingLoans = loans.filter((loan) => loan.status !== "paid");
       const borrowTotal = pendingLoans
@@ -1643,10 +1905,10 @@
       homeBorrowTotal.textContent = formatMoney(borrowTotal);
       homeLendTotal.textContent = formatMoney(lendTotal);
       homeDueSoon.textContent = dueSoonCount ? `${dueSoonCount} khoản` : "Không có";
-      homeDebtCount.textContent = `${pendingLoans.length} mục`;
       homeRecentCount.textContent = `${recentItems.length} khoản`;
       homeRecentEmpty.style.display = recentItems.length ? "none" : "block";
       homeRecentList.innerHTML = "";
+      checkInactivityReminder();
 
       recentItems.forEach((item) => {
         const li = document.createElement("li");
@@ -1950,6 +2212,7 @@
       }
 
       saveTransactions();
+      markDataEntry();
       monthFilter.value = getMonthKey(date);
       resetTransactionForm(false);
       render();
@@ -1957,6 +2220,38 @@
 
     typeInput.addEventListener("change", populateCategoryOptions);
     cancelEditButton.addEventListener("click", () => resetTransactionForm());
+
+    [greetingInput, greetingColorInput, greetingSizeInput].forEach((input) => {
+      input.addEventListener("input", () => {
+        saveGreetingSettings();
+        applyGreetingSettings();
+      });
+    });
+
+    avatarInput.addEventListener("change", () => {
+      const file = avatarInput.files && avatarInput.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.addEventListener("load", () => {
+        avatarPreview.dataset.avatar = reader.result;
+        saveGreetingSettings();
+        applyGreetingSettings();
+      });
+      reader.readAsDataURL(file);
+    });
+
+    notificationButton.addEventListener("click", async () => {
+      if (!("Notification" in window)) {
+        inactivityReminder.textContent = "Trình duyệt này chưa hỗ trợ thông báo hệ thống.";
+        inactivityReminder.classList.add("show");
+        return;
+      }
+
+      const permission = await Notification.requestPermission();
+      notificationButton.textContent = permission === "granted" ? "Đã bật nhắc nhập liệu" : "Bật nhắc nhập liệu";
+      checkInactivityReminder();
+    });
 
     navButtons.forEach((button) => {
       button.addEventListener("click", () => {
@@ -2067,6 +2362,7 @@
       }
 
       saveLoans();
+      markDataEntry();
       resetLoanForm(false);
       render();
     });
@@ -2149,6 +2445,10 @@
     }
 
     populateCategoryOptions();
+    applyGreetingSettings();
+    if ("Notification" in window && Notification.permission === "granted") {
+      notificationButton.textContent = "Đã bật nhắc nhập liệu";
+    }
     dateInput.value = getTodayKey();
     loanDueInput.value = getTodayKey();
     monthFilter.value = getMonthKey(getTodayKey());
