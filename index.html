@@ -136,27 +136,28 @@
 
     .dashboard-card.state-positive {
       border-color: rgba(18, 128, 92, 0.28);
-      background: #f6fffb;
+      background: #effcf6;
     }
 
     .dashboard-card.state-good {
       border-color: rgba(20, 148, 136, 0.30);
-      background: #f0fffc;
+      background: #e7fbf8;
     }
 
     .dashboard-card.state-watch {
       border-color: rgba(234, 179, 8, 0.38);
-      background: #fffbea;
+      background: #fff4c2;
     }
 
     .dashboard-card.state-low {
       border-color: rgba(194, 65, 12, 0.34);
-      background: #fff9f3;
+      background: #ffe8d5;
     }
 
-    .dashboard-card.state-negative {
+    .dashboard-card.state-negative,
+    .dashboard-card.state-danger {
       border-color: rgba(180, 35, 24, 0.34);
-      background: #fff7f6;
+      background: #ffe4df;
     }
 
     .balance-hero {
@@ -175,15 +176,16 @@
     }
 
     .dashboard-card.state-watch .balance-hero {
-      background: #fff7d6;
+      background: #ffeaa3;
     }
 
     .dashboard-card.state-low .balance-hero {
-      background: #fff7df;
+      background: #ffd7ba;
     }
 
-    .dashboard-card.state-negative .balance-hero {
-      background: var(--danger-bg);
+    .dashboard-card.state-negative .balance-hero,
+    .dashboard-card.state-danger .balance-hero {
+      background: #ffd0c8;
     }
 
     .balance-label {
@@ -1884,7 +1886,8 @@
     function getExpenseState(totalExpense, totalIncome) {
       const limit = parseMoneyInput(limitInput.value);
       const base = limit > 0 ? limit : totalIncome;
-      if (totalExpense <= 0 || base <= 0) return "safe";
+      if (totalExpense <= 0) return "safe";
+      if (base <= 0) return "danger";
 
       const ratio = totalExpense / base;
       if (ratio > 1) return "danger";
@@ -1934,7 +1937,7 @@
       const expenseState = getExpenseState(totalExpense, totalIncome);
 
       applyTextState(balanceEl, balanceState);
-      applyStateClasses(dashboardCard, "state", balanceState === "safe" ? "positive" : balanceState);
+      applyStateClasses(dashboardCard, "state", balanceState === "safe" ? "positive" : balanceState === "danger" ? "negative" : balanceState);
       applyStateClasses(expenseSummaryCard, "state", expenseState);
       applyTextState(totalExpenseEl, expenseState);
 
