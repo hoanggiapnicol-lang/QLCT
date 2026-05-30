@@ -653,7 +653,12 @@
       gap: 14px;
     }
 
+    .greeting-card.editing .personalize-panel {
+      display: grid;
+    }
+
     .greeting-preview {
+      position: relative;
       display: grid;
       grid-template-columns: auto 1fr;
       gap: 13px;
@@ -662,6 +667,33 @@
       border-radius: 8px;
       background: #fbfdff;
       padding: 14px;
+    }
+
+    .personalize-button {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      background: #ffffff;
+      color: var(--primary);
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+    }
+
+    .personalize-button:hover {
+      border-color: var(--primary);
+      background: #f8fbff;
+    }
+
+    .personalize-button svg {
+      width: 19px;
+      height: 19px;
     }
 
     .avatar-preview {
@@ -699,6 +731,15 @@
     .greeting-controls {
       display: grid;
       gap: 10px;
+    }
+
+    .personalize-panel {
+      display: none;
+      gap: 12px;
+    }
+
+    .personalize-panel h2 {
+      margin: 0;
     }
 
     .reminder-banner {
@@ -1041,43 +1082,37 @@
             <p id="greetingDisplay" class="greeting-text">Chào ngày mới</p>
             <p id="greetingStatus" class="greeting-subtext">Sẵn sàng ghi lại thu chi hôm nay.</p>
           </div>
+          <button id="personalizeButton" class="personalize-button" type="button" aria-label="Cá nhân hóa trang chủ">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m4 20 4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20zM14 6l4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </button>
         </div>
         <div id="inactivityReminder" class="reminder-banner" role="alert"></div>
-        <div class="greeting-controls">
-          <label>
-            Câu chào
-            <input id="greetingInput" type="text" autocomplete="off" placeholder="Ví dụ: Chào ông chủ">
-          </label>
-          <label>
-            Màu chữ
-            <input id="greetingColorInput" type="color" value="#1f2933">
-          </label>
-          <label>
-            Cỡ chữ
-            <select id="greetingSizeInput">
-              <option value="22">Nhỏ</option>
-              <option value="28">Vừa</option>
-              <option value="34">To</option>
-            </select>
-          </label>
-          <label class="full-width">
-            Ảnh đại diện
-            <input id="avatarInput" type="file" accept="image/*">
-          </label>
-          <button id="notificationButton" class="secondary-button full-width" type="button">Bật nhắc nhập liệu</button>
-        </div>
-        <div class="insight-grid" aria-live="polite">
-          <div class="insight-item">
-            <strong id="homeBorrowTotal" class="balance-negative">0đ</strong>
-            <span>Vay</span>
-          </div>
-          <div class="insight-item">
-            <strong id="homeLendTotal" class="income-text">0đ</strong>
-            <span>Cho vay</span>
-          </div>
-          <div class="insight-item">
-            <strong id="homeDueSoon">Không có</strong>
-            <span>Sắp đến hạn</span>
+        <div id="personalizePanel" class="personalize-panel">
+          <h2>Cá nhân hóa</h2>
+          <div class="greeting-controls">
+            <label>
+              Câu chào
+              <input id="greetingInput" type="text" autocomplete="off" placeholder="Ví dụ: Chào ông chủ">
+            </label>
+            <label>
+              Màu chữ
+              <input id="greetingColorInput" type="color" value="#1f2933">
+            </label>
+            <label>
+              Cỡ chữ
+              <select id="greetingSizeInput">
+                <option value="22">Nhỏ</option>
+                <option value="28">Vừa</option>
+                <option value="34">To</option>
+              </select>
+            </label>
+            <label class="full-width">
+              Ảnh đại diện
+              <input id="avatarInput" type="file" accept="image/*">
+            </label>
+            <button id="notificationButton" class="secondary-button full-width" type="button">Bật nhắc nhập liệu</button>
           </div>
         </div>
       </div>
@@ -1335,6 +1370,7 @@
     const appViews = document.querySelectorAll(".app-view");
     const navButtons = document.querySelectorAll(".nav-button");
     const homeOnlyBlocks = document.querySelectorAll(".home-only");
+    const greetingCard = document.querySelector(".greeting-card");
     const form = document.getElementById("transactionForm");
     const nameInput = document.getElementById("nameInput");
     const amountInput = document.getElementById("amountInput");
@@ -1373,12 +1409,11 @@
     const transactionList = document.getElementById("transactionList");
     const emptyState = document.getElementById("emptyState");
     const transactionCount = document.getElementById("transactionCount");
-    const homeBorrowTotal = document.getElementById("homeBorrowTotal");
-    const homeLendTotal = document.getElementById("homeLendTotal");
-    const homeDueSoon = document.getElementById("homeDueSoon");
     const homeRecentCount = document.getElementById("homeRecentCount");
     const homeRecentEmpty = document.getElementById("homeRecentEmpty");
     const homeRecentList = document.getElementById("homeRecentList");
+    const personalizeButton = document.getElementById("personalizeButton");
+    const personalizePanel = document.getElementById("personalizePanel");
     const avatarPreview = document.getElementById("avatarPreview");
     const greetingDisplay = document.getElementById("greetingDisplay");
     const greetingStatus = document.getElementById("greetingStatus");
@@ -1889,22 +1924,11 @@
     }
 
     function renderHome() {
-      const pendingLoans = loans.filter((loan) => loan.status !== "paid");
-      const borrowTotal = pendingLoans
-        .filter((loan) => loan.type === "borrow")
-        .reduce((sum, loan) => sum + loan.amount, 0);
-      const lendTotal = pendingLoans
-        .filter((loan) => loan.type === "lend")
-        .reduce((sum, loan) => sum + loan.amount, 0);
-      const dueSoonCount = pendingLoans.filter((loan) => daysUntil(loan.dueDate) <= 7).length;
       const recentItems = getMonthTransactions()
         .slice()
         .sort((a, b) => b.date.localeCompare(a.date) || new Date(b.createdAt) - new Date(a.createdAt))
         .slice(0, 3);
 
-      homeBorrowTotal.textContent = formatMoney(borrowTotal);
-      homeLendTotal.textContent = formatMoney(lendTotal);
-      homeDueSoon.textContent = dueSoonCount ? `${dueSoonCount} khoản` : "Không có";
       homeRecentCount.textContent = `${recentItems.length} khoản`;
       homeRecentEmpty.style.display = recentItems.length ? "none" : "block";
       homeRecentList.innerHTML = "";
@@ -2226,6 +2250,11 @@
         saveGreetingSettings();
         applyGreetingSettings();
       });
+    });
+
+    personalizeButton.addEventListener("click", () => {
+      const isOpen = greetingCard.classList.toggle("editing");
+      personalizeButton.setAttribute("aria-expanded", String(isOpen));
     });
 
     avatarInput.addEventListener("change", () => {
