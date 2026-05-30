@@ -556,6 +556,10 @@
     .month-row {
       display: grid;
       gap: 7px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fbfdff;
     }
 
     .month-row-header {
@@ -1300,6 +1304,10 @@
     <section id="reportsView" class="app-view single-view" data-view="reports" aria-label="Báo cáo">
       <div class="panel">
         <h2>Báo cáo hàng tháng</h2>
+        <label>
+          Chọn tháng báo cáo
+          <input id="reportMonthFilter" type="month">
+        </label>
         <div class="monthly-report" aria-live="polite">
           <div class="report-summary">
             <div class="report-pill">
@@ -1445,6 +1453,7 @@
     const dailyAverageEl = document.getElementById("dailyAverage");
     const remainingBudgetEl = document.getElementById("remainingBudget");
     const monthFilter = document.getElementById("monthFilter");
+    const reportMonthFilter = document.getElementById("reportMonthFilter");
     const typeFilter = document.getElementById("typeFilter");
     const exportButton = document.getElementById("exportButton");
     const reportIncomeEl = document.getElementById("reportIncome");
@@ -1726,6 +1735,10 @@
       return monthFilter.value || getMonthKey(getTodayKey());
     }
 
+    function getSelectedReportMonth() {
+      return reportMonthFilter.value || getSelectedMonth();
+    }
+
     function shiftMonth(monthKey, offset) {
       const [year, month] = monthKey.split("-").map(Number);
       const date = new Date(year, month - 1 + offset, 1);
@@ -1828,7 +1841,7 @@
 
       renderLimitStatus();
       renderInsights(totalExpense);
-      renderMonthlyReport(totalIncome, totalExpense, balance);
+      renderMonthlyReport();
       renderCategoryBreakdown();
     }
 
@@ -1894,50 +1907,44 @@
       });
     }
 
-    function renderMonthlyReport(totalIncome, totalExpense, balance) {
-      reportIncomeEl.textContent = formatMoney(totalIncome);
-      reportExpenseEl.textContent = formatMoney(totalExpense);
+    function renderMonthlyReport() {
+      const selectedMonth = getSelectedReportMonth();
+      const totals = getMonthTotals(selectedMonth);
+      const balance = totals.income - totals.expense;
+      const maxValue = Math.max(totals.income, totals.expense, 0);
+      const hasData = totals.income > 0 || totals.expense > 0;
+      const incomePercent = maxValue ? Math.round((totals.income / maxValue) * 100) : 0;
+      const expensePercent = maxValue ? Math.round((totals.expense / maxValue) * 100) : 0;
+
+      reportIncomeEl.textContent = formatMoney(totals.income);
+      reportExpenseEl.textContent = formatMoney(totals.expense);
       reportBalanceEl.textContent = formatMoney(balance);
       reportBalanceEl.className = balance < 0 ? "balance-negative" : "balance-positive";
-
-      const selectedMonth = getSelectedMonth();
-      const monthKeys = Array.from({ length: 6 }, (_, index) => shiftMonth(selectedMonth, -index));
-      const reportRows = monthKeys.map((monthKey) => ({
-        monthKey,
-        ...getMonthTotals(monthKey)
-      }));
-      const maxValue = Math.max(...reportRows.map((row) => Math.max(row.income, row.expense)), 0);
-      const hasData = reportRows.some((row) => row.income > 0 || row.expense > 0);
 
       monthlyReportList.innerHTML = "";
       monthlyReportEmpty.style.display = hasData ? "none" : "block";
 
-      reportRows.forEach((row) => {
-        const rowBalance = row.income - row.expense;
-        const incomePercent = maxValue ? Math.round((row.income / maxValue) * 100) : 0;
-        const expensePercent = maxValue ? Math.round((row.expense / maxValue) * 100) : 0;
-        const li = document.createElement("li");
-        li.className = "month-row";
-        li.innerHTML = `
-          <div class="month-row-header">
-            <span>${formatMonthLabel(row.monthKey)}</span>
-            <span class="${rowBalance < 0 ? "balance-negative" : "balance-positive"}">${formatMoney(rowBalance)}</span>
+      const li = document.createElement("li");
+      li.className = "month-row";
+      li.innerHTML = `
+        <div class="month-row-header">
+          <span>${formatMonthLabel(selectedMonth)}</span>
+          <span class="${balance < 0 ? "balance-negative" : "balance-positive"}">${formatMoney(balance)}</span>
+        </div>
+        <div class="month-bars">
+          <div class="month-bar">
+            <span>Thu</span>
+            <div class="month-track" aria-hidden="true"><div class="month-fill income" style="width: ${incomePercent}%"></div></div>
+            <span>${formatMoney(totals.income)}</span>
           </div>
-          <div class="month-bars">
-            <div class="month-bar">
-              <span>Thu</span>
-              <div class="month-track" aria-hidden="true"><div class="month-fill income" style="width: ${incomePercent}%"></div></div>
-              <span>${formatMoney(row.income)}</span>
-            </div>
-            <div class="month-bar">
-              <span>Chi</span>
-              <div class="month-track" aria-hidden="true"><div class="month-fill expense" style="width: ${expensePercent}%"></div></div>
-              <span>${formatMoney(row.expense)}</span>
-            </div>
+          <div class="month-bar">
+            <span>Chi</span>
+            <div class="month-track" aria-hidden="true"><div class="month-fill expense" style="width: ${expensePercent}%"></div></div>
+            <span>${formatMoney(totals.expense)}</span>
           </div>
-        `;
-        monthlyReportList.appendChild(li);
-      });
+        </div>
+      `;
+      monthlyReportList.appendChild(li);
     }
 
     function playReminderSound() {
@@ -2409,6 +2416,7 @@
     });
 
     monthFilter.addEventListener("input", render);
+    reportMonthFilter.addEventListener("input", render);
     typeFilter.addEventListener("change", render);
     exportButton.addEventListener("click", exportCsv);
 
@@ -2570,6 +2578,7 @@
     dateInput.value = getTodayKey();
     loanDueInput.value = getTodayKey();
     monthFilter.value = getMonthKey(getTodayKey());
+    reportMonthFilter.value = getMonthKey(getTodayKey());
     limitInput.value = formatInputMoney(readStorage(LIMIT_KEY, ""));
     render();
   </script>
