@@ -1025,8 +1025,8 @@
           <label>
             Loại
             <select id="loanTypeInput">
-              <option value="borrow">Tôi vay</option>
-              <option value="lend">Tôi cho vay</option>
+              <option value="borrow">Đi vay</option>
+              <option value="lend">Cho vay</option>
             </select>
           </label>
           <label>
@@ -1690,7 +1690,7 @@
           <div class="loan-head">
             <div>
               <p class="loan-title"></p>
-              <p class="loan-meta">${loan.type === "borrow" ? "Tôi vay" : "Tôi cho vay"} • Hạn ${dueText}</p>
+              <p class="loan-meta">${loan.type === "borrow" ? "Đi vay" : "Cho vay"} • Hạn ${dueText}</p>
             </div>
             <span class="loan-amount ${loan.type === "borrow" ? "balance-negative" : "income-text"}">${formatMoney(loan.amount)}</span>
           </div>
