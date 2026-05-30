@@ -945,11 +945,11 @@
         <div class="insight-grid" aria-live="polite">
           <div class="insight-item">
             <strong id="homeBorrowTotal" class="balance-negative">0đ</strong>
-            <span>Tôi đang nợ</span>
+            <span>Vay</span>
           </div>
           <div class="insight-item">
             <strong id="homeLendTotal" class="income-text">0đ</strong>
-            <span>Người khác nợ tôi</span>
+            <span>Cho vay</span>
           </div>
           <div class="insight-item">
             <strong id="homeDueSoon">Không có</strong>
@@ -1032,8 +1032,8 @@
           <label>
             Trạng thái
             <select id="loanStatusInput">
-              <option value="pending">Chưa xong</option>
-              <option value="paid">Đã xong</option>
+              <option value="pending">Chưa trả</option>
+              <option value="paid">Đã trả</option>
             </select>
           </label>
           <label class="full-width">
@@ -1478,7 +1478,7 @@
 
     function getLoanStatusInfo(loan) {
       if (loan.status === "paid") {
-        return { text: loan.type === "borrow" ? "Đã trả" : "Đã thu", className: "status-ok" };
+        return { text: "Đã trả", className: "status-ok" };
       }
 
       const remainingDays = daysUntil(loan.dueDate);
@@ -1698,7 +1698,7 @@
           <span class="status-chip ${statusInfo.className}">${statusInfo.text}</span>
           <div class="transaction-actions" style="margin-top: 10px;">
             <button class="edit-button" type="button" data-id="${loan.id}" data-loan-action="edit">Sửa</button>
-            <button class="secondary-button" type="button" data-id="${loan.id}" data-loan-action="toggle">${loan.status === "paid" ? "Mở lại" : "Đã xong"}</button>
+            <button class="secondary-button" type="button" data-id="${loan.id}" data-loan-action="toggle">${loan.status === "paid" ? "Mở lại" : "Đã trả"}</button>
             <button class="delete-button" type="button" data-id="${loan.id}" data-loan-action="delete">Xóa</button>
           </div>
         `;
