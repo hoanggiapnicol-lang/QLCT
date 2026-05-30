@@ -180,6 +180,19 @@
       gap: 16px;
     }
 
+    .app-view {
+      display: none;
+      gap: 16px;
+    }
+
+    .app-view.active {
+      display: grid;
+    }
+
+    .home-only.hidden {
+      display: none;
+    }
+
     .panel {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -344,6 +357,10 @@
 
     .balance-negative {
       color: var(--danger);
+    }
+
+    .balance-low {
+      color: var(--expense);
     }
 
     .limit-box {
@@ -597,6 +614,11 @@
       background: #fbfdff;
     }
 
+    .section-gap {
+      display: grid;
+      gap: 14px;
+    }
+
     .transaction {
       display: grid;
       grid-template-columns: 1fr auto;
@@ -689,10 +711,126 @@
       background: var(--danger-bg);
     }
 
+    .loan-card {
+      border: 1px solid var(--border);
+      border-left-width: 5px;
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 12px;
+    }
+
+    .loan-card.borrow {
+      border-left-color: var(--danger);
+      background: var(--danger-bg);
+    }
+
+    .loan-card.lend {
+      border-left-color: var(--income);
+      background: var(--income-bg);
+    }
+
+    .loan-card.paid {
+      border-left-color: var(--safe);
+      background: var(--safe-bg);
+    }
+
+    .loan-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .loan-title {
+      margin: 0 0 3px;
+      font-weight: 900;
+      overflow-wrap: anywhere;
+    }
+
+    .loan-meta,
+    .loan-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .loan-note {
+      margin-top: 5px;
+      color: #475569;
+    }
+
+    .loan-amount {
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .status-chip {
+      display: inline-flex;
+      width: fit-content;
+      margin-top: 8px;
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 0.82rem;
+      font-weight: 900;
+    }
+
+    .status-ok {
+      background: var(--safe-bg);
+      color: var(--safe);
+    }
+
+    .status-warn {
+      background: #fff7df;
+      color: #9a5b00;
+    }
+
+    .status-danger {
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
+
+    .bottom-nav {
+      position: fixed;
+      left: 50%;
+      bottom: 0;
+      z-index: 25;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      width: min(100%, 980px);
+      transform: translateX(-50%);
+      border-top: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.97);
+      box-shadow: 0 -10px 26px rgba(15, 23, 42, 0.08);
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-button {
+      min-height: 62px;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 900;
+      cursor: pointer;
+      padding: 8px 4px;
+    }
+
+    .nav-button svg {
+      display: block;
+      width: 22px;
+      height: 22px;
+      margin: 0 auto 3px;
+    }
+
+    .nav-button.active {
+      color: var(--primary);
+      background: #f3f7ff;
+    }
+
     .fab-add {
       position: fixed;
       right: 18px;
-      bottom: 18px;
+      bottom: 78px;
       z-index: 20;
       display: inline-flex;
       align-items: center;
@@ -734,6 +872,15 @@
         align-items: start;
       }
 
+      .app-view.active {
+        grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+        align-items: start;
+      }
+
+      .app-view.active.single-view {
+        grid-template-columns: 1fr;
+      }
+
       .summary-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
       }
@@ -768,7 +915,7 @@
         </button>
         <p id="installHelp" class="install-help">Trên iPhone: bấm Chia sẻ trong Safari, rồi chọn Thêm vào Màn hình chính.</p>
       </div>
-      <section class="dashboard-card" aria-label="Tổng quan nhanh">
+      <section class="dashboard-card home-only" aria-label="Tổng quan nhanh">
         <div class="balance-hero">
           <p class="balance-label">
             <span>Số dư còn lại</span>
@@ -789,7 +936,39 @@
       </section>
     </header>
 
-    <section class="layout" aria-label="Ứng dụng quản lý chi tiêu">
+    <section id="homeView" class="app-view active single-view" data-view="home" aria-label="Trang chủ">
+      <div class="panel">
+        <div class="list-header">
+          <h2>Nhắc việc hôm nay</h2>
+          <span id="homeDebtCount" class="count">0 mục</span>
+        </div>
+        <div class="insight-grid" aria-live="polite">
+          <div class="insight-item">
+            <strong id="homeBorrowTotal" class="balance-negative">0đ</strong>
+            <span>Tôi đang nợ</span>
+          </div>
+          <div class="insight-item">
+            <strong id="homeLendTotal" class="income-text">0đ</strong>
+            <span>Người khác nợ tôi</span>
+          </div>
+          <div class="insight-item">
+            <strong id="homeDueSoon">Không có</strong>
+            <span>Sắp đến hạn</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="list-header">
+          <h2>Giao dịch gần đây</h2>
+          <span id="homeRecentCount" class="count">0 khoản</span>
+        </div>
+        <p id="homeRecentEmpty" class="empty">Chưa có giao dịch nào trong tháng này.</p>
+        <ul id="homeRecentList" class="transactions"></ul>
+      </div>
+    </section>
+
+    <section id="transactionsView" class="app-view" data-view="transactions" aria-label="Giao dịch">
       <div class="panel">
         <h2 id="formTitle">Thêm khoản mới</h2>
         <form id="transactionForm" class="form-grid two-cols" novalidate>
@@ -841,6 +1020,106 @@
       </div>
 
       <div class="panel">
+        <h2>Vay / Nợ</h2>
+        <form id="loanForm" class="form-grid two-cols" novalidate>
+          <label>
+            Loại
+            <select id="loanTypeInput">
+              <option value="borrow">Tôi vay</option>
+              <option value="lend">Tôi cho vay</option>
+            </select>
+          </label>
+          <label>
+            Trạng thái
+            <select id="loanStatusInput">
+              <option value="pending">Chưa xong</option>
+              <option value="paid">Đã xong</option>
+            </select>
+          </label>
+          <label class="full-width">
+            Người liên quan
+            <input id="loanPersonInput" type="text" autocomplete="off" placeholder="Ví dụ: Anh Nam">
+          </label>
+          <label>
+            Số tiền
+            <input id="loanAmountInput" type="text" inputmode="numeric" autocomplete="off" placeholder="Ví dụ: 500.000">
+          </label>
+          <label>
+            Ngày hẹn trả
+            <input id="loanDueInput" type="date">
+          </label>
+          <label class="full-width">
+            Ghi chú
+            <input id="loanNoteInput" type="text" autocomplete="off" placeholder="Ví dụ: Mượn tiền ăn trưa">
+          </label>
+          <p id="loanError" class="error full-width" role="alert"></p>
+          <div class="form-actions full-width">
+            <button id="loanSubmitButton" class="primary-button" type="submit">Thêm khoản vay/nợ</button>
+            <button id="loanCancelButton" class="cancel-button" type="button">Hủy sửa</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="panel full-width">
+        <div class="list-header">
+          <h2>Sổ giao dịch</h2>
+          <span id="transactionCount" class="count">0 khoản</span>
+        </div>
+        <div class="filters">
+          <label>
+            Tháng xem
+            <input id="monthFilter" type="month">
+          </label>
+          <label>
+            Lọc loại
+            <select id="typeFilter">
+              <option value="all">Tất cả</option>
+              <option value="expense">Chi</option>
+              <option value="income">Thu</option>
+            </select>
+          </label>
+          <button id="exportButton" class="secondary-button" type="button">Xuất CSV</button>
+        </div>
+        <h2>Khoản đã nhập</h2>
+        <p id="emptyState" class="empty">Chưa có khoản nào. Hãy thêm khoản thu hoặc chi đầu tiên.</p>
+        <ul id="transactionList" class="transactions"></ul>
+
+        <h2 style="margin-top: 18px;">Danh sách vay / nợ</h2>
+        <p id="loanEmpty" class="empty">Chưa có khoản vay/nợ nào.</p>
+        <ul id="loanList" class="transactions"></ul>
+      </div>
+    </section>
+
+    <section id="reportsView" class="app-view single-view" data-view="reports" aria-label="Báo cáo">
+      <div class="panel">
+        <h2>Báo cáo hàng tháng</h2>
+        <div class="monthly-report" aria-live="polite">
+          <div class="report-summary">
+            <div class="report-pill">
+              <span>Thu tháng này</span>
+              <strong id="reportIncome" class="income-text">0đ</strong>
+            </div>
+            <div class="report-pill">
+              <span>Chi tháng này</span>
+              <strong id="reportExpense" class="expense-text">0đ</strong>
+            </div>
+            <div class="report-pill">
+              <span>Còn lại</span>
+              <strong id="reportBalance" class="balance-positive">0đ</strong>
+            </div>
+          </div>
+          <p id="monthlyReportEmpty" class="empty">Chưa có dữ liệu để lập báo cáo hàng tháng.</p>
+          <ul id="monthlyReportList" class="monthly-list"></ul>
+        </div>
+
+        <h2>Chi theo danh mục</h2>
+        <p id="categoryEmpty" class="empty">Chưa có khoản chi nào trong tháng đang xem.</p>
+        <ul id="categoryBreakdown" class="category-list"></ul>
+      </div>
+    </section>
+
+    <section id="budgetView" class="app-view single-view" data-view="budget" aria-label="Ngân sách">
+      <div class="panel">
         <h2>Ngân sách tháng</h2>
         <div class="limit-box">
           <label>
@@ -868,54 +1147,26 @@
           </div>
         </div>
       </div>
-
-      <div class="panel full-width">
-        <div class="list-header">
-          <h2>Sổ giao dịch</h2>
-          <span id="transactionCount" class="count">0 khoản</span>
-        </div>
-        <div class="filters">
-          <label>
-            Tháng xem
-            <input id="monthFilter" type="month">
-          </label>
-          <label>
-            Lọc loại
-            <select id="typeFilter">
-              <option value="all">Tất cả</option>
-              <option value="expense">Chi</option>
-              <option value="income">Thu</option>
-            </select>
-          </label>
-          <button id="exportButton" class="secondary-button" type="button">Xuất CSV</button>
-        </div>
-        <h2>Báo cáo hàng tháng</h2>
-        <div class="monthly-report" aria-live="polite">
-          <div class="report-summary">
-            <div class="report-pill">
-              <span>Thu tháng này</span>
-              <strong id="reportIncome" class="income-text">0đ</strong>
-            </div>
-            <div class="report-pill">
-              <span>Chi tháng này</span>
-              <strong id="reportExpense" class="expense-text">0đ</strong>
-            </div>
-            <div class="report-pill">
-              <span>Còn lại</span>
-              <strong id="reportBalance" class="balance-positive">0đ</strong>
-            </div>
-          </div>
-          <p id="monthlyReportEmpty" class="empty">Chưa có dữ liệu để lập báo cáo hàng tháng.</p>
-          <ul id="monthlyReportList" class="monthly-list"></ul>
-        </div>
-        <h2>Chi theo danh mục</h2>
-        <p id="categoryEmpty" class="empty">Chưa có khoản chi nào trong tháng đang xem.</p>
-        <ul id="categoryBreakdown" class="category-list"></ul>
-        <h2 style="margin-top: 18px;">Khoản đã nhập</h2>
-        <p id="emptyState" class="empty">Chưa có khoản nào. Hãy thêm khoản thu hoặc chi đầu tiên.</p>
-        <ul id="transactionList" class="transactions"></ul>
-      </div>
     </section>
+
+    <nav class="bottom-nav" aria-label="Điều hướng chính">
+      <button class="nav-button active" type="button" data-view-target="home" aria-label="Trang chủ">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 12 4l8 7v8a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path></svg>
+        Trang chủ
+      </button>
+      <button class="nav-button" type="button" data-view-target="transactions" aria-label="Giao dịch">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10M7 12h10M7 17h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
+        Giao dịch
+      </button>
+      <button class="nav-button" type="button" data-view-target="reports" aria-label="Báo cáo">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19V9m7 10V5m7 14v-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
+        Báo cáo
+      </button>
+      <button class="nav-button" type="button" data-view-target="budget" aria-label="Ngân sách">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v10H4zM8 11h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        Ngân sách
+      </button>
+    </nav>
     <button id="fabAddButton" class="fab-add" type="button" aria-label="Thêm khoản mới">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"></path>
@@ -926,6 +1177,7 @@
   <script>
     const STORAGE_KEY = "qlct_transactions";
     const LIMIT_KEY = "qlct_monthly_limit";
+    const LOAN_STORAGE_KEY = "qlct_loans";
     const CATEGORIES = {
       expense: [
         ["food", "Ăn uống"],
@@ -953,6 +1205,9 @@
     };
     const CATEGORY_LABELS = Object.fromEntries([...CATEGORIES.expense, ...CATEGORIES.income]);
 
+    const appViews = document.querySelectorAll(".app-view");
+    const navButtons = document.querySelectorAll(".nav-button");
+    const homeOnlyBlocks = document.querySelectorAll(".home-only");
     const form = document.getElementById("transactionForm");
     const nameInput = document.getElementById("nameInput");
     const amountInput = document.getElementById("amountInput");
@@ -990,11 +1245,32 @@
     const transactionList = document.getElementById("transactionList");
     const emptyState = document.getElementById("emptyState");
     const transactionCount = document.getElementById("transactionCount");
+    const homeBorrowTotal = document.getElementById("homeBorrowTotal");
+    const homeLendTotal = document.getElementById("homeLendTotal");
+    const homeDueSoon = document.getElementById("homeDueSoon");
+    const homeDebtCount = document.getElementById("homeDebtCount");
+    const homeRecentCount = document.getElementById("homeRecentCount");
+    const homeRecentEmpty = document.getElementById("homeRecentEmpty");
+    const homeRecentList = document.getElementById("homeRecentList");
+    const loanForm = document.getElementById("loanForm");
+    const loanTypeInput = document.getElementById("loanTypeInput");
+    const loanStatusInput = document.getElementById("loanStatusInput");
+    const loanPersonInput = document.getElementById("loanPersonInput");
+    const loanAmountInput = document.getElementById("loanAmountInput");
+    const loanDueInput = document.getElementById("loanDueInput");
+    const loanNoteInput = document.getElementById("loanNoteInput");
+    const loanError = document.getElementById("loanError");
+    const loanSubmitButton = document.getElementById("loanSubmitButton");
+    const loanCancelButton = document.getElementById("loanCancelButton");
+    const loanEmpty = document.getElementById("loanEmpty");
+    const loanList = document.getElementById("loanList");
 
     let memoryStore = {};
     let transactions = loadTransactions();
+    let loans = loadLoans();
     let deferredInstallPrompt = null;
     let editingTransactionId = null;
+    let editingLoanId = null;
 
     const currencyFormatter = new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -1073,6 +1349,23 @@
       return `${year}-${month}-${day}`;
     }
 
+    function normalizeLoan(item) {
+      const type = item.type === "lend" ? "lend" : "borrow";
+      const amount = typeof item.amount === "number" ? item.amount : parseMoneyInput(item.amount);
+
+      return {
+        id: item.id || `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        type,
+        status: item.status === "paid" ? "paid" : "pending",
+        person: String(item.person || "Chưa nhập tên"),
+        amount: Number.isFinite(amount) ? amount : 0,
+        dueDate: item.dueDate || getTodayKey(),
+        note: String(item.note || ""),
+        createdAt: item.createdAt || new Date().toISOString(),
+        updatedAt: item.updatedAt || ""
+      };
+    }
+
     function normalizeTransaction(item) {
       const type = item.type === "income" ? "income" : "expense";
       const fallbackCategory = type === "income" ? "other_income" : "other_expense";
@@ -1099,8 +1392,21 @@
       }
     }
 
+    function loadLoans() {
+      try {
+        const stored = JSON.parse(readStorage(LOAN_STORAGE_KEY, "[]"));
+        return Array.isArray(stored) ? stored.map(normalizeLoan) : [];
+      } catch {
+        return [];
+      }
+    }
+
     function saveTransactions() {
       writeStorage(STORAGE_KEY, JSON.stringify(transactions));
+    }
+
+    function saveLoans() {
+      writeStorage(LOAN_STORAGE_KEY, JSON.stringify(loans));
     }
 
     function saveLimit(value) {
@@ -1164,6 +1470,30 @@
         }, { income: 0, expense: 0 });
     }
 
+    function daysUntil(dateKey) {
+      const today = new Date(`${getTodayKey()}T12:00:00`);
+      const due = new Date(`${dateKey}T12:00:00`);
+      return Math.round((due - today) / 86400000);
+    }
+
+    function getLoanStatusInfo(loan) {
+      if (loan.status === "paid") {
+        return { text: loan.type === "borrow" ? "Đã trả" : "Đã thu", className: "status-ok" };
+      }
+
+      const remainingDays = daysUntil(loan.dueDate);
+      if (remainingDays < 0) {
+        return { text: `Quá hạn ${Math.abs(remainingDays)} ngày`, className: "status-danger" };
+      }
+      if (remainingDays === 0) {
+        return { text: "Đến hạn hôm nay", className: "status-warn" };
+      }
+      if (remainingDays <= 7) {
+        return { text: `Còn ${remainingDays} ngày`, className: "status-warn" };
+      }
+      return { text: `Còn ${remainingDays} ngày`, className: "status-ok" };
+    }
+
     function renderSummary() {
       const monthTransactions = getMonthTransactions();
       const totalIncome = monthTransactions
@@ -1179,7 +1509,8 @@
       balanceEl.textContent = formatMoney(balance);
       currentMonthLabel.textContent = formatMonthLabel(getSelectedMonth());
       balanceEl.classList.toggle("balance-negative", balance < 0);
-      balanceEl.classList.toggle("balance-positive", balance >= 0);
+      balanceEl.classList.toggle("balance-low", balance >= 0 && totalIncome > 0 && balance / totalIncome < 0.2);
+      balanceEl.classList.toggle("balance-positive", balance >= 0 && (!totalIncome || balance / totalIncome >= 0.2));
 
       renderLimitStatus();
       renderInsights(totalExpense);
@@ -1295,6 +1626,87 @@
       });
     }
 
+    function renderHome() {
+      const pendingLoans = loans.filter((loan) => loan.status !== "paid");
+      const borrowTotal = pendingLoans
+        .filter((loan) => loan.type === "borrow")
+        .reduce((sum, loan) => sum + loan.amount, 0);
+      const lendTotal = pendingLoans
+        .filter((loan) => loan.type === "lend")
+        .reduce((sum, loan) => sum + loan.amount, 0);
+      const dueSoonCount = pendingLoans.filter((loan) => daysUntil(loan.dueDate) <= 7).length;
+      const recentItems = getMonthTransactions()
+        .slice()
+        .sort((a, b) => b.date.localeCompare(a.date) || new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 3);
+
+      homeBorrowTotal.textContent = formatMoney(borrowTotal);
+      homeLendTotal.textContent = formatMoney(lendTotal);
+      homeDueSoon.textContent = dueSoonCount ? `${dueSoonCount} khoản` : "Không có";
+      homeDebtCount.textContent = `${pendingLoans.length} mục`;
+      homeRecentCount.textContent = `${recentItems.length} khoản`;
+      homeRecentEmpty.style.display = recentItems.length ? "none" : "block";
+      homeRecentList.innerHTML = "";
+
+      recentItems.forEach((item) => {
+        const li = document.createElement("li");
+        const isIncome = item.type === "income";
+        li.className = `transaction ${isIncome ? "income" : "expense"}`;
+        li.innerHTML = `
+          <div class="transaction-main">
+            <p class="transaction-name"></p>
+            <p class="transaction-meta">${isIncome ? "Thu" : "Chi"} • ${CATEGORY_LABELS[item.category] || "Khác"}</p>
+          </div>
+          <div class="transaction-side">
+            <span class="transaction-amount ${isIncome ? "income-text" : "expense-text"}">${isIncome ? "+" : "-"}${formatMoney(item.amount)}</span>
+          </div>
+        `;
+        li.querySelector(".transaction-name").textContent = item.name;
+        homeRecentList.appendChild(li);
+      });
+    }
+
+    function renderLoans() {
+      const sortedLoans = loans
+        .slice()
+        .sort((a, b) => {
+          if (a.status !== b.status) return a.status === "pending" ? -1 : 1;
+          return a.dueDate.localeCompare(b.dueDate);
+        });
+
+      loanList.innerHTML = "";
+      loanEmpty.style.display = sortedLoans.length ? "none" : "block";
+
+      sortedLoans.forEach((loan) => {
+        const statusInfo = getLoanStatusInfo(loan);
+        const dueText = new Intl.DateTimeFormat("vi-VN", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric"
+        }).format(new Date(`${loan.dueDate}T12:00:00`));
+        const li = document.createElement("li");
+        li.className = `loan-card ${loan.status === "paid" ? "paid" : loan.type}`;
+        li.innerHTML = `
+          <div class="loan-head">
+            <div>
+              <p class="loan-title"></p>
+              <p class="loan-meta">${loan.type === "borrow" ? "Tôi vay" : "Tôi cho vay"} • Hạn ${dueText}</p>
+            </div>
+            <span class="loan-amount ${loan.type === "borrow" ? "balance-negative" : "income-text"}">${formatMoney(loan.amount)}</span>
+          </div>
+          ${loan.note ? `<p class="loan-note">${escapeHtml(loan.note)}</p>` : ""}
+          <span class="status-chip ${statusInfo.className}">${statusInfo.text}</span>
+          <div class="transaction-actions" style="margin-top: 10px;">
+            <button class="edit-button" type="button" data-id="${loan.id}" data-loan-action="edit">Sửa</button>
+            <button class="secondary-button" type="button" data-id="${loan.id}" data-loan-action="toggle">${loan.status === "paid" ? "Mở lại" : "Đã xong"}</button>
+            <button class="delete-button" type="button" data-id="${loan.id}" data-loan-action="delete">Xóa</button>
+          </div>
+        `;
+        li.querySelector(".loan-title").textContent = loan.person;
+        loanList.appendChild(li);
+      });
+    }
+
     function renderTransactions() {
       const visibleTransactions = getVisibleTransactions();
       transactionList.innerHTML = "";
@@ -1348,7 +1760,9 @@
 
     function render() {
       renderSummary();
+      renderHome();
       renderTransactions();
+      renderLoans();
     }
 
     function populateCategoryOptions() {
@@ -1430,6 +1844,39 @@
       nameInput.focus();
     }
 
+    function resetLoanForm(shouldFocus = true) {
+      editingLoanId = null;
+      loanForm.reset();
+      loanTypeInput.value = "borrow";
+      loanStatusInput.value = "pending";
+      loanDueInput.value = getTodayKey();
+      loanSubmitButton.textContent = "Thêm khoản vay/nợ";
+      loanCancelButton.classList.remove("show");
+      clearLoanError();
+
+      if (shouldFocus) {
+        loanPersonInput.focus();
+      }
+    }
+
+    function startEditLoan(id) {
+      const loan = loans.find((item) => item.id === id);
+      if (!loan) return;
+
+      editingLoanId = id;
+      loanTypeInput.value = loan.type;
+      loanStatusInput.value = loan.status;
+      loanPersonInput.value = loan.person;
+      loanAmountInput.value = formatInputMoney(loan.amount);
+      loanDueInput.value = loan.dueDate;
+      loanNoteInput.value = loan.note || "";
+      loanSubmitButton.textContent = "Lưu khoản vay/nợ";
+      loanCancelButton.classList.add("show");
+      clearLoanError();
+      loanForm.scrollIntoView({ behavior: "smooth", block: "start" });
+      loanPersonInput.focus();
+    }
+
     function showError(message) {
       formError.textContent = message;
       formError.classList.add("show");
@@ -1438,6 +1885,16 @@
     function clearError() {
       formError.textContent = "";
       formError.classList.remove("show");
+    }
+
+    function showLoanError(message) {
+      loanError.textContent = message;
+      loanError.classList.add("show");
+    }
+
+    function clearLoanError() {
+      loanError.textContent = "";
+      loanError.classList.remove("show");
     }
 
     form.addEventListener("submit", (event) => {
@@ -1501,6 +1958,16 @@
     typeInput.addEventListener("change", populateCategoryOptions);
     cancelEditButton.addEventListener("click", () => resetTransactionForm());
 
+    navButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const target = button.dataset.viewTarget;
+        appViews.forEach((view) => view.classList.toggle("active", view.dataset.view === target));
+        navButtons.forEach((navButton) => navButton.classList.toggle("active", navButton === button));
+        homeOnlyBlocks.forEach((block) => block.classList.toggle("hidden", target !== "home"));
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    });
+
     document.querySelectorAll(".quick-button").forEach((button) => {
       button.addEventListener("click", () => {
         amountInput.value = formatInputMoney(button.dataset.amount);
@@ -1509,12 +1976,14 @@
     });
 
     amountInput.addEventListener("input", () => formatMoneyField(amountInput));
+    loanAmountInput.addEventListener("input", () => formatMoneyField(loanAmountInput));
 
     fabAddButton.addEventListener("click", () => {
       if (editingTransactionId) {
         resetTransactionForm(false);
       }
 
+      document.querySelector('[data-view-target="transactions"]').click();
       form.scrollIntoView({ behavior: "smooth", block: "start" });
       nameInput.focus();
     });
@@ -1545,6 +2014,93 @@
         resetTransactionForm(false);
       }
       saveTransactions();
+      render();
+    });
+
+    loanForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      clearLoanError();
+
+      const person = loanPersonInput.value.trim();
+      const amount = parseMoneyInput(loanAmountInput.value);
+      const dueDate = loanDueInput.value;
+
+      if (!person) {
+        showLoanError("Vui lòng nhập tên người liên quan.");
+        loanPersonInput.focus();
+        return;
+      }
+
+      if (!Number.isFinite(amount) || amount <= 0) {
+        showLoanError("Vui lòng nhập số tiền lớn hơn 0.");
+        loanAmountInput.focus();
+        return;
+      }
+
+      if (!dueDate) {
+        showLoanError("Vui lòng chọn ngày hẹn trả.");
+        loanDueInput.focus();
+        return;
+      }
+
+      const nextLoan = {
+        type: loanTypeInput.value,
+        status: loanStatusInput.value,
+        person,
+        amount,
+        dueDate,
+        note: loanNoteInput.value.trim()
+      };
+
+      if (editingLoanId) {
+        loans = loans.map((loan) => loan.id === editingLoanId ? {
+          ...loan,
+          ...nextLoan,
+          updatedAt: new Date().toISOString()
+        } : loan);
+      } else {
+        loans.push({
+          id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+          ...nextLoan,
+          createdAt: new Date().toISOString()
+        });
+      }
+
+      saveLoans();
+      resetLoanForm(false);
+      render();
+    });
+
+    loanCancelButton.addEventListener("click", () => resetLoanForm());
+
+    loanList.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-loan-action]");
+      if (!button) return;
+
+      const id = button.dataset.id;
+      const action = button.dataset.loanAction;
+
+      if (action === "edit") {
+        startEditLoan(id);
+        return;
+      }
+
+      if (action === "toggle") {
+        loans = loans.map((loan) => loan.id === id ? {
+          ...loan,
+          status: loan.status === "paid" ? "pending" : "paid",
+          updatedAt: new Date().toISOString()
+        } : loan);
+      }
+
+      if (action === "delete") {
+        loans = loans.filter((loan) => loan.id !== id);
+        if (editingLoanId === id) {
+          resetLoanForm(false);
+        }
+      }
+
+      saveLoans();
       render();
     });
 
@@ -1584,6 +2140,7 @@
 
     populateCategoryOptions();
     dateInput.value = getTodayKey();
+    loanDueInput.value = getTodayKey();
     monthFilter.value = getMonthKey(getTodayKey());
     limitInput.value = formatInputMoney(readStorage(LIMIT_KEY, ""));
     render();
