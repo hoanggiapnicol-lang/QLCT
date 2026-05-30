@@ -55,7 +55,7 @@
     .page {
       width: min(100%, 980px);
       margin: 0 auto;
-      padding: 20px 14px 36px;
+      padding: 16px 14px 92px;
     }
 
     .app-header {
@@ -122,6 +122,57 @@
     .install-help.show {
       display: block;
       flex-basis: 100%;
+    }
+
+    .dashboard-card {
+      margin-top: 16px;
+      border: 1px solid rgba(37, 99, 235, 0.16);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .balance-hero {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      background: #fbfdff;
+    }
+
+    .balance-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 0 0 4px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      font-weight: 800;
+    }
+
+    .balance-month {
+      color: var(--primary);
+      font-size: 0.86rem;
+      white-space: nowrap;
+    }
+
+    .balance-hero .summary-value {
+      font-size: 2rem;
+      line-height: 1.1;
+    }
+
+    .summary-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .dashboard-card .summary-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      padding: 12px;
+    }
+
+    .summary-item.balance-wide {
+      grid-column: 1 / -1;
     }
 
     .layout {
@@ -256,11 +307,6 @@
       border-color: var(--primary);
       color: var(--primary);
       background: #f8fbff;
-    }
-
-    .summary-grid {
-      display: grid;
-      gap: 10px;
     }
 
     .summary-item {
@@ -548,13 +594,44 @@
       background: var(--danger-bg);
     }
 
+    .fab-add {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 20;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 58px;
+      height: 58px;
+      border: 0;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 14px 26px rgba(37, 99, 235, 0.34);
+      cursor: pointer;
+    }
+
+    .fab-add:hover {
+      background: var(--primary-dark);
+    }
+
+    .fab-add svg {
+      width: 28px;
+      height: 28px;
+    }
+
     @media (min-width: 760px) {
       .page {
-        padding: 32px 22px 48px;
+        padding: 32px 22px 96px;
       }
 
       .app-header h1 {
         font-size: 2.15rem;
+      }
+
+      .dashboard-card .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .layout {
@@ -595,6 +672,25 @@
         </button>
         <p id="installHelp" class="install-help">Trên iPhone: bấm Chia sẻ trong Safari, rồi chọn Thêm vào Màn hình chính.</p>
       </div>
+      <section class="dashboard-card" aria-label="Tổng quan nhanh">
+        <div class="balance-hero">
+          <p class="balance-label">
+            <span>Số dư còn lại</span>
+            <span id="currentMonthLabel" class="balance-month">Tháng này</span>
+          </p>
+          <p id="balance" class="summary-value balance-positive">0đ</p>
+        </div>
+        <div class="summary-grid" aria-live="polite">
+          <div class="summary-item">
+            <p class="summary-label">Tổng thu</p>
+            <p id="totalIncome" class="summary-value income-text">0đ</p>
+          </div>
+          <div class="summary-item">
+            <p class="summary-label">Tổng chi</p>
+            <p id="totalExpense" class="summary-value expense-text">0đ</p>
+          </div>
+        </div>
+      </section>
     </header>
 
     <section class="layout" aria-label="Ứng dụng quản lý chi tiêu">
@@ -649,22 +745,7 @@
       </div>
 
       <div class="panel">
-        <h2>Tổng quan</h2>
-        <div class="summary-grid" aria-live="polite">
-          <div class="summary-item">
-            <p class="summary-label">Tổng thu</p>
-            <p id="totalIncome" class="summary-value income-text">0đ</p>
-          </div>
-          <div class="summary-item">
-            <p class="summary-label">Tổng chi</p>
-            <p id="totalExpense" class="summary-value expense-text">0đ</p>
-          </div>
-          <div class="summary-item">
-            <p class="summary-label">Số dư</p>
-            <p id="balance" class="summary-value balance-positive">0đ</p>
-          </div>
-        </div>
-
+        <h2>Ngân sách tháng</h2>
         <div class="limit-box">
           <label>
             Hạn mức chi tháng
@@ -720,6 +801,11 @@
         <ul id="transactionList" class="transactions"></ul>
       </div>
     </section>
+    <button id="fabAddButton" class="fab-add" type="button" aria-label="Thêm khoản mới">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"></path>
+      </svg>
+    </button>
   </main>
 
   <script>
@@ -763,8 +849,10 @@
     const submitButton = document.getElementById("submitButton");
     const cancelEditButton = document.getElementById("cancelEditButton");
     const formError = document.getElementById("formError");
+    const fabAddButton = document.getElementById("fabAddButton");
     const installButton = document.getElementById("installButton");
     const installHelp = document.getElementById("installHelp");
+    const currentMonthLabel = document.getElementById("currentMonthLabel");
     const totalIncomeEl = document.getElementById("totalIncome");
     const totalExpenseEl = document.getElementById("totalExpense");
     const balanceEl = document.getElementById("balance");
@@ -841,6 +929,16 @@
     function getMonthKey(value) {
       const dateKey = value || getTodayKey();
       return dateKey.slice(0, 7);
+    }
+
+    function formatMonthLabel(monthKey) {
+      const [year, month] = monthKey.split("-").map(Number);
+      if (!year || !month) return "Tháng này";
+
+      return new Intl.DateTimeFormat("vi-VN", {
+        month: "long",
+        year: "numeric"
+      }).format(new Date(year, month - 1, 1));
     }
 
     function dateFromTransaction(item) {
@@ -938,6 +1036,7 @@
       totalIncomeEl.textContent = formatMoney(totalIncome);
       totalExpenseEl.textContent = formatMoney(totalExpense);
       balanceEl.textContent = formatMoney(balance);
+      currentMonthLabel.textContent = formatMonthLabel(getSelectedMonth());
       balanceEl.classList.toggle("balance-negative", balance < 0);
       balanceEl.classList.toggle("balance-positive", balance >= 0);
 
@@ -1222,6 +1321,15 @@
     });
 
     amountInput.addEventListener("input", () => formatMoneyField(amountInput));
+
+    fabAddButton.addEventListener("click", () => {
+      if (editingTransactionId) {
+        resetTransactionForm(false);
+      }
+
+      form.scrollIntoView({ behavior: "smooth", block: "start" });
+      nameInput.focus();
+    });
 
     limitInput.addEventListener("input", () => {
       formatMoneyField(limitInput);
