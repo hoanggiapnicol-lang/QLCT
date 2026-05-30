@@ -1,4 +1,4 @@
-const CACHE_NAME = "qlct-pwa-v13";
+const CACHE_NAME = "qlct-pwa-v14";
 const APP_SHELL = [
   "/",
   "/index.html",

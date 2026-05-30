@@ -139,6 +139,16 @@
       background: #f6fffb;
     }
 
+    .dashboard-card.state-good {
+      border-color: rgba(20, 148, 136, 0.30);
+      background: #f0fffc;
+    }
+
+    .dashboard-card.state-watch {
+      border-color: rgba(234, 179, 8, 0.38);
+      background: #fffbea;
+    }
+
     .dashboard-card.state-low {
       border-color: rgba(194, 65, 12, 0.34);
       background: #fff9f3;
@@ -158,6 +168,14 @@
 
     .dashboard-card.state-positive .balance-hero {
       background: var(--safe-bg);
+    }
+
+    .dashboard-card.state-good .balance-hero {
+      background: #e7fbf8;
+    }
+
+    .dashboard-card.state-watch .balance-hero {
+      background: #fff7d6;
     }
 
     .dashboard-card.state-low .balance-hero {
@@ -356,6 +374,32 @@
       border-radius: 8px;
       padding: 13px;
       background: #fbfdff;
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .summary-item.state-safe {
+      border-color: rgba(18, 128, 92, 0.25);
+      background: var(--safe-bg);
+    }
+
+    .summary-item.state-good {
+      border-color: rgba(20, 148, 136, 0.28);
+      background: #e7fbf8;
+    }
+
+    .summary-item.state-watch {
+      border-color: rgba(234, 179, 8, 0.38);
+      background: #fff7d6;
+    }
+
+    .summary-item.state-low {
+      border-color: rgba(194, 65, 12, 0.34);
+      background: var(--expense-bg);
+    }
+
+    .summary-item.state-danger {
+      border-color: rgba(180, 35, 24, 0.34);
+      background: var(--danger-bg);
     }
 
     .summary-label {
@@ -390,6 +434,14 @@
 
     .balance-low {
       color: var(--expense);
+    }
+
+    .balance-watch {
+      color: #9a5b00;
+    }
+
+    .balance-good {
+      color: #0f766e;
     }
 
     .limit-box {
@@ -1110,7 +1162,7 @@
             <p class="summary-label">Tổng thu</p>
             <p id="totalIncome" class="summary-value income-text">0đ</p>
           </div>
-          <div class="summary-item">
+          <div id="expenseSummaryCard" class="summary-item">
             <p class="summary-label">Tổng chi</p>
             <p id="totalExpense" class="summary-value expense-text">0đ</p>
           </div>
@@ -1445,6 +1497,7 @@
     const currentMonthLabel = document.getElementById("currentMonthLabel");
     const totalIncomeEl = document.getElementById("totalIncome");
     const totalExpenseEl = document.getElementById("totalExpense");
+    const expenseSummaryCard = document.getElementById("expenseSummaryCard");
     const balanceEl = document.getElementById("balance");
     const limitInput = document.getElementById("limitInput");
     const limitProgress = document.getElementById("limitProgress");
@@ -1816,6 +1869,53 @@
       return { text: `Còn ${remainingDays} ngày`, className: "status-ok" };
     }
 
+    function getBalanceState(balance, totalIncome) {
+      if (balance < 0) return "danger";
+      if (totalIncome <= 0) return balance > 0 ? "safe" : "good";
+
+      const ratio = balance / totalIncome;
+      if (ratio >= 0.6) return "safe";
+      if (ratio >= 0.35) return "good";
+      if (ratio >= 0.2) return "watch";
+      if (ratio > 0) return "low";
+      return "danger";
+    }
+
+    function getExpenseState(totalExpense, totalIncome) {
+      const limit = parseMoneyInput(limitInput.value);
+      const base = limit > 0 ? limit : totalIncome;
+      if (totalExpense <= 0 || base <= 0) return "safe";
+
+      const ratio = totalExpense / base;
+      if (ratio > 1) return "danger";
+      if (ratio >= 0.85) return "low";
+      if (ratio >= 0.65) return "watch";
+      if (ratio >= 0.35) return "good";
+      return "safe";
+    }
+
+    function applyStateClasses(element, prefix, state) {
+      ["safe", "positive", "good", "watch", "low", "danger", "negative"].forEach((name) => {
+        element.classList.remove(`${prefix}-${name}`);
+      });
+      element.classList.add(`${prefix}-${state}`);
+    }
+
+    function applyTextState(element, state) {
+      element.classList.remove("balance-positive", "balance-good", "balance-watch", "balance-low", "balance-negative", "expense-text");
+      if (state === "safe") {
+        element.classList.add("balance-positive");
+      } else if (state === "good") {
+        element.classList.add("balance-good");
+      } else if (state === "watch") {
+        element.classList.add("balance-watch");
+      } else if (state === "low") {
+        element.classList.add("balance-low");
+      } else {
+        element.classList.add("balance-negative");
+      }
+    }
+
     function renderSummary() {
       const monthTransactions = getMonthTransactions();
       const totalIncome = monthTransactions
@@ -1830,14 +1930,13 @@
       totalExpenseEl.textContent = formatMoney(totalExpense);
       balanceEl.textContent = formatMoney(balance);
       currentMonthLabel.textContent = formatMonthLabel(getSelectedMonth());
-      const isNegative = balance < 0;
-      const isLow = balance >= 0 && totalIncome > 0 && balance / totalIncome < 0.2;
-      balanceEl.classList.toggle("balance-negative", isNegative);
-      balanceEl.classList.toggle("balance-low", isLow);
-      balanceEl.classList.toggle("balance-positive", balance >= 0 && !isLow);
-      dashboardCard.classList.toggle("state-negative", isNegative);
-      dashboardCard.classList.toggle("state-low", isLow);
-      dashboardCard.classList.toggle("state-positive", !isNegative && !isLow);
+      const balanceState = getBalanceState(balance, totalIncome);
+      const expenseState = getExpenseState(totalExpense, totalIncome);
+
+      applyTextState(balanceEl, balanceState);
+      applyStateClasses(dashboardCard, "state", balanceState === "safe" ? "positive" : balanceState);
+      applyStateClasses(expenseSummaryCard, "state", expenseState);
+      applyTextState(totalExpenseEl, expenseState);
 
       renderLimitStatus();
       renderInsights(totalExpense);
