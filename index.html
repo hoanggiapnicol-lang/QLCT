@@ -465,6 +465,101 @@
       background: var(--expense);
     }
 
+    .monthly-report {
+      display: grid;
+      gap: 12px;
+      margin: 16px 0 18px;
+    }
+
+    .report-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .report-pill {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fbfdff;
+      padding: 10px;
+      min-width: 0;
+    }
+
+    .report-pill span {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .report-pill strong {
+      display: block;
+      font-size: 0.95rem;
+      overflow-wrap: anywhere;
+    }
+
+    .monthly-list {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .month-row {
+      display: grid;
+      gap: 7px;
+    }
+
+    .month-row-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-weight: 800;
+    }
+
+    .month-row-header span:last-child {
+      white-space: nowrap;
+    }
+
+    .month-bars {
+      display: grid;
+      gap: 5px;
+    }
+
+    .month-bar {
+      display: grid;
+      grid-template-columns: 42px 1fr auto;
+      gap: 8px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+
+    .month-track {
+      height: 8px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #edf2f7;
+    }
+
+    .month-fill {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+    }
+
+    .month-fill.income {
+      background: var(--income);
+    }
+
+    .month-fill.expense {
+      background: var(--expense);
+    }
+
     .list-header {
       display: flex;
       align-items: center;
@@ -644,7 +739,8 @@
       }
 
       .filters,
-      .insight-grid {
+      .insight-grid,
+      .report-summary {
         grid-template-columns: repeat(3, minmax(0, 1fr));
       }
 
@@ -793,6 +889,25 @@
           </label>
           <button id="exportButton" class="secondary-button" type="button">Xuất CSV</button>
         </div>
+        <h2>Báo cáo hàng tháng</h2>
+        <div class="monthly-report" aria-live="polite">
+          <div class="report-summary">
+            <div class="report-pill">
+              <span>Thu tháng này</span>
+              <strong id="reportIncome" class="income-text">0đ</strong>
+            </div>
+            <div class="report-pill">
+              <span>Chi tháng này</span>
+              <strong id="reportExpense" class="expense-text">0đ</strong>
+            </div>
+            <div class="report-pill">
+              <span>Còn lại</span>
+              <strong id="reportBalance" class="balance-positive">0đ</strong>
+            </div>
+          </div>
+          <p id="monthlyReportEmpty" class="empty">Chưa có dữ liệu để lập báo cáo hàng tháng.</p>
+          <ul id="monthlyReportList" class="monthly-list"></ul>
+        </div>
         <h2>Chi theo danh mục</h2>
         <p id="categoryEmpty" class="empty">Chưa có khoản chi nào trong tháng đang xem.</p>
         <ul id="categoryBreakdown" class="category-list"></ul>
@@ -865,6 +980,11 @@
     const monthFilter = document.getElementById("monthFilter");
     const typeFilter = document.getElementById("typeFilter");
     const exportButton = document.getElementById("exportButton");
+    const reportIncomeEl = document.getElementById("reportIncome");
+    const reportExpenseEl = document.getElementById("reportExpense");
+    const reportBalanceEl = document.getElementById("reportBalance");
+    const monthlyReportEmpty = document.getElementById("monthlyReportEmpty");
+    const monthlyReportList = document.getElementById("monthlyReportList");
     const categoryEmpty = document.getElementById("categoryEmpty");
     const categoryBreakdown = document.getElementById("categoryBreakdown");
     const transactionList = document.getElementById("transactionList");
@@ -991,6 +1111,14 @@
       return monthFilter.value || getMonthKey(getTodayKey());
     }
 
+    function shiftMonth(monthKey, offset) {
+      const [year, month] = monthKey.split("-").map(Number);
+      const date = new Date(year, month - 1 + offset, 1);
+      const nextYear = date.getFullYear();
+      const nextMonth = String(date.getMonth() + 1).padStart(2, "0");
+      return `${nextYear}-${nextMonth}`;
+    }
+
     function isInSelectedMonth(item) {
       return getMonthKey(item.date) === getSelectedMonth();
     }
@@ -1023,6 +1151,19 @@
         .sort((a, b) => b.amount - a.amount);
     }
 
+    function getMonthTotals(monthKey) {
+      return transactions
+        .filter((item) => getMonthKey(item.date) === monthKey)
+        .reduce((totals, item) => {
+          if (item.type === "income") {
+            totals.income += item.amount;
+          } else {
+            totals.expense += item.amount;
+          }
+          return totals;
+        }, { income: 0, expense: 0 });
+    }
+
     function renderSummary() {
       const monthTransactions = getMonthTransactions();
       const totalIncome = monthTransactions
@@ -1042,6 +1183,7 @@
 
       renderLimitStatus();
       renderInsights(totalExpense);
+      renderMonthlyReport(totalIncome, totalExpense, balance);
       renderCategoryBreakdown();
     }
 
@@ -1104,6 +1246,52 @@
           </div>
         `;
         categoryBreakdown.appendChild(li);
+      });
+    }
+
+    function renderMonthlyReport(totalIncome, totalExpense, balance) {
+      reportIncomeEl.textContent = formatMoney(totalIncome);
+      reportExpenseEl.textContent = formatMoney(totalExpense);
+      reportBalanceEl.textContent = formatMoney(balance);
+      reportBalanceEl.className = balance < 0 ? "balance-negative" : "balance-positive";
+
+      const selectedMonth = getSelectedMonth();
+      const monthKeys = Array.from({ length: 6 }, (_, index) => shiftMonth(selectedMonth, -index));
+      const reportRows = monthKeys.map((monthKey) => ({
+        monthKey,
+        ...getMonthTotals(monthKey)
+      }));
+      const maxValue = Math.max(...reportRows.map((row) => Math.max(row.income, row.expense)), 0);
+      const hasData = reportRows.some((row) => row.income > 0 || row.expense > 0);
+
+      monthlyReportList.innerHTML = "";
+      monthlyReportEmpty.style.display = hasData ? "none" : "block";
+
+      reportRows.forEach((row) => {
+        const rowBalance = row.income - row.expense;
+        const incomePercent = maxValue ? Math.round((row.income / maxValue) * 100) : 0;
+        const expensePercent = maxValue ? Math.round((row.expense / maxValue) * 100) : 0;
+        const li = document.createElement("li");
+        li.className = "month-row";
+        li.innerHTML = `
+          <div class="month-row-header">
+            <span>${formatMonthLabel(row.monthKey)}</span>
+            <span class="${rowBalance < 0 ? "balance-negative" : "balance-positive"}">${formatMoney(rowBalance)}</span>
+          </div>
+          <div class="month-bars">
+            <div class="month-bar">
+              <span>Thu</span>
+              <div class="month-track" aria-hidden="true"><div class="month-fill income" style="width: ${incomePercent}%"></div></div>
+              <span>${formatMoney(row.income)}</span>
+            </div>
+            <div class="month-bar">
+              <span>Chi</span>
+              <div class="month-track" aria-hidden="true"><div class="month-fill expense" style="width: ${expensePercent}%"></div></div>
+              <span>${formatMoney(row.expense)}</span>
+            </div>
+          </div>
+        `;
+        monthlyReportList.appendChild(li);
       });
     }
 
