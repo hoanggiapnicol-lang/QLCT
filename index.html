@@ -669,6 +669,10 @@
       padding: 14px;
     }
 
+    .greeting-preview.hide-status .greeting-subtext {
+      display: none;
+    }
+
     .personalize-button {
       position: absolute;
       right: 10px;
@@ -731,6 +735,42 @@
     .greeting-controls {
       display: grid;
       gap: 10px;
+    }
+
+    input[type="range"] {
+      min-height: 34px;
+      padding: 0;
+      accent-color: var(--primary);
+    }
+
+    .range-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .range-value {
+      color: var(--primary);
+      font-size: 0.86rem;
+      font-weight: 900;
+    }
+
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fbfdff;
+    }
+
+    .toggle-label input {
+      width: 24px;
+      min-height: 24px;
+      accent-color: var(--primary);
     }
 
     .personalize-panel {
@@ -1101,16 +1141,24 @@
               <input id="greetingColorInput" type="color" value="#1f2933">
             </label>
             <label>
-              Cỡ chữ
-              <select id="greetingSizeInput">
-                <option value="22">Nhỏ</option>
-                <option value="28">Vừa</option>
-                <option value="34">To</option>
-              </select>
+              <span class="range-label">Cỡ chữ <span id="greetingSizeValue" class="range-value">5/10</span></span>
+              <input id="greetingSizeInput" type="range" min="0" max="10" step="1" value="5">
+            </label>
+            <label>
+              <span class="range-label">Độ cao thẻ <span id="greetingCardSizeValue" class="range-value">5/10</span></span>
+              <input id="greetingCardSizeInput" type="range" min="0" max="10" step="1" value="5">
+            </label>
+            <label>
+              <span class="range-label">Kích thước ảnh <span id="avatarSizeValue" class="range-value">5/10</span></span>
+              <input id="avatarSizeInput" type="range" min="0" max="10" step="1" value="5">
             </label>
             <label class="full-width">
               Ảnh đại diện
               <input id="avatarInput" type="file" accept="image/*">
+            </label>
+            <label class="toggle-label full-width">
+              <span>Hiện dòng mô tả</span>
+              <input id="showGreetingStatusInput" type="checkbox" checked>
             </label>
             <button id="notificationButton" class="secondary-button full-width" type="button">Bật nhắc nhập liệu</button>
           </div>
@@ -1420,6 +1468,12 @@
     const greetingInput = document.getElementById("greetingInput");
     const greetingColorInput = document.getElementById("greetingColorInput");
     const greetingSizeInput = document.getElementById("greetingSizeInput");
+    const greetingSizeValue = document.getElementById("greetingSizeValue");
+    const greetingCardSizeInput = document.getElementById("greetingCardSizeInput");
+    const greetingCardSizeValue = document.getElementById("greetingCardSizeValue");
+    const avatarSizeInput = document.getElementById("avatarSizeInput");
+    const avatarSizeValue = document.getElementById("avatarSizeValue");
+    const showGreetingStatusInput = document.getElementById("showGreetingStatusInput");
     const avatarInput = document.getElementById("avatarInput");
     const notificationButton = document.getElementById("notificationButton");
     const inactivityReminder = document.getElementById("inactivityReminder");
@@ -1490,12 +1544,15 @@
         return {
           text: "Chào ngày mới",
           color: "#1f2933",
-          size: "28",
+          sizeLevel: "5",
+          cardSizeLevel: "5",
+          avatarSizeLevel: "5",
+          showStatus: true,
           avatar: "",
           ...JSON.parse(readStorage(GREETING_STORAGE_KEY, "{}"))
         };
       } catch {
-        return { text: "Chào ngày mới", color: "#1f2933", size: "28", avatar: "" };
+        return { text: "Chào ngày mới", color: "#1f2933", sizeLevel: "5", cardSizeLevel: "5", avatarSizeLevel: "5", showStatus: true, avatar: "" };
       }
     }
 
@@ -1503,20 +1560,48 @@
       writeStorage(GREETING_STORAGE_KEY, JSON.stringify({
         text: greetingInput.value.trim() || "Chào ngày mới",
         color: greetingColorInput.value || "#1f2933",
-        size: greetingSizeInput.value || "28",
+        sizeLevel: greetingSizeInput.value || "5",
+        cardSizeLevel: greetingCardSizeInput.value || "5",
+        avatarSizeLevel: avatarSizeInput.value || "5",
+        showStatus: showGreetingStatusInput.checked,
         avatar: avatarPreview.dataset.avatar || ""
       }));
     }
 
     function applyGreetingSettings(settings = loadGreetingSettings()) {
+      const sizeLevel = String(settings.sizeLevel ?? levelFromLegacyFontSize(settings.size));
+      const cardSizeLevel = String(settings.cardSizeLevel ?? "5");
+      const avatarSizeLevel = String(settings.avatarSizeLevel ?? "5");
+      const showStatus = settings.showStatus !== false;
+      const fontSize = 18 + Number(sizeLevel) * 3;
+      const avatarSize = 48 + Number(avatarSizeLevel) * 6;
+      const cardPadding = 10 + Number(cardSizeLevel) * 3;
+      const cardGap = 9 + Number(cardSizeLevel);
+
       greetingInput.value = settings.text;
       greetingColorInput.value = settings.color;
-      greetingSizeInput.value = settings.size;
+      greetingSizeInput.value = sizeLevel;
+      greetingCardSizeInput.value = cardSizeLevel;
+      avatarSizeInput.value = avatarSizeLevel;
+      showGreetingStatusInput.checked = showStatus;
+      greetingSizeValue.textContent = `${sizeLevel}/10`;
+      greetingCardSizeValue.textContent = `${cardSizeLevel}/10`;
+      avatarSizeValue.textContent = `${avatarSizeLevel}/10`;
       greetingDisplay.textContent = settings.text;
       greetingDisplay.style.color = settings.color;
-      greetingDisplay.style.fontSize = `${settings.size}px`;
+      greetingDisplay.style.fontSize = `${fontSize}px`;
+      document.querySelector(".greeting-preview").style.padding = `${cardPadding}px`;
+      document.querySelector(".greeting-preview").style.gap = `${cardGap}px`;
+      document.querySelector(".greeting-preview").classList.toggle("hide-status", !showStatus);
+      avatarPreview.style.width = `${avatarSize}px`;
+      avatarPreview.style.height = `${avatarSize}px`;
       avatarPreview.dataset.avatar = settings.avatar || "";
       avatarPreview.innerHTML = settings.avatar ? `<img src="${settings.avatar}" alt="Ảnh đại diện">` : "QL";
+    }
+
+    function levelFromLegacyFontSize(value) {
+      const size = Number(value || 28);
+      return Math.max(0, Math.min(10, Math.round((size - 18) / 3)));
     }
 
     function getTodayKey() {
@@ -2245,8 +2330,12 @@
     typeInput.addEventListener("change", populateCategoryOptions);
     cancelEditButton.addEventListener("click", () => resetTransactionForm());
 
-    [greetingInput, greetingColorInput, greetingSizeInput].forEach((input) => {
+    [greetingInput, greetingColorInput, greetingSizeInput, greetingCardSizeInput, avatarSizeInput, showGreetingStatusInput].forEach((input) => {
       input.addEventListener("input", () => {
+        saveGreetingSettings();
+        applyGreetingSettings();
+      });
+      input.addEventListener("change", () => {
         saveGreetingSettings();
         applyGreetingSettings();
       });
