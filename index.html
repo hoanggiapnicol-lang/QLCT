@@ -62,6 +62,13 @@
       padding: 10px 2px 18px;
     }
 
+    .header-top {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: start;
+    }
+
     .app-header h1 {
       margin: 0 0 6px;
       font-size: 1.75rem;
@@ -79,6 +86,31 @@
       flex-wrap: wrap;
       gap: 10px;
       margin-top: 14px;
+    }
+
+    .icon-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      background: #ffffff;
+      color: var(--text);
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+    }
+
+    .icon-button:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: #f8fbff;
+    }
+
+    .icon-button svg {
+      width: 21px;
+      height: 21px;
     }
 
     .install-button {
@@ -248,6 +280,172 @@
       border-radius: 8px;
       box-shadow: var(--shadow);
       padding: 16px;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      display: none;
+      background: rgba(15, 23, 42, 0.34);
+      padding: 14px;
+    }
+
+    .overlay.show {
+      display: grid;
+      align-items: end;
+    }
+
+    .sheet {
+      width: min(100%, 720px);
+      max-height: min(88vh, 820px);
+      margin: 0 auto;
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 12px 12px 8px 8px;
+      background: #ffffff;
+      box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
+      padding: 16px;
+    }
+
+    .sheet-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .sheet-header h2 {
+      margin: 0;
+      font-size: 1.16rem;
+    }
+
+    .close-button {
+      width: 38px;
+      height: 38px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      background: #ffffff;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 1.35rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .close-button:hover {
+      border-color: var(--danger);
+      color: var(--danger);
+      background: var(--danger-bg);
+    }
+
+    .search-box {
+      display: grid;
+      gap: 12px;
+    }
+
+    .search-input-wrap {
+      position: relative;
+    }
+
+    .search-input-wrap svg {
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      width: 20px;
+      height: 20px;
+      color: var(--muted);
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .search-input-wrap input {
+      padding-left: 42px;
+    }
+
+    .search-summary {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .search-summary .summary-item {
+      padding: 11px;
+    }
+
+    .search-sections {
+      display: grid;
+      gap: 14px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 4px 0 8px;
+      font-weight: 900;
+    }
+
+    .category-card-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .category-card {
+      display: grid;
+      gap: 8px;
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fbfdff;
+      padding: 12px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .category-card:hover {
+      border-color: var(--primary);
+      background: #f8fbff;
+    }
+
+    .category-card-head {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 12px;
+      font-weight: 900;
+    }
+
+    .category-card-meta {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .category-card.expense .category-card-amount {
+      color: var(--expense);
+    }
+
+    .category-card.income .category-card-amount {
+      color: var(--income);
+    }
+
+    .detail-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .detail-note {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 0.92rem;
     }
 
     .panel h2 {
@@ -536,6 +734,15 @@
     .category-row {
       display: grid;
       gap: 7px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      padding: 8px;
+      cursor: pointer;
+    }
+
+    .category-row:hover {
+      border-color: var(--primary);
+      background: #f8fbff;
     }
 
     .category-line {
@@ -1140,8 +1347,17 @@
 <body>
   <main class="page">
     <header class="app-header">
-      <h1>Quản lý chi tiêu cá nhân</h1>
-      <p>Ghi lại khoản thu, khoản chi hằng ngày và theo dõi số dư của bạn.</p>
+      <div class="header-top">
+        <div>
+          <h1>Quản lý chi tiêu cá nhân</h1>
+          <p>Ghi lại khoản thu, khoản chi hằng ngày và theo dõi số dư của bạn.</p>
+        </div>
+        <button id="openSearchButton" class="icon-button" type="button" aria-label="Tìm kiếm giao dịch và danh mục">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m21 21-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"></path>
+          </svg>
+        </button>
+      </div>
       <div class="header-actions">
         <button id="installButton" class="install-button" type="button">
           <svg class="install-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -1418,6 +1634,89 @@
       </div>
     </section>
 
+    <div id="searchOverlay" class="overlay" aria-hidden="true">
+      <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="searchTitle">
+        <div class="sheet-header">
+          <h2 id="searchTitle">Tìm kiếm nhanh</h2>
+          <button id="closeSearchButton" class="close-button" type="button" aria-label="Đóng tìm kiếm">×</button>
+        </div>
+        <div class="search-box">
+          <div class="search-input-wrap">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m21 21-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"></path>
+            </svg>
+            <input id="searchInput" type="search" autocomplete="off" placeholder="Tìm Ăn uống, HĐ Điện, lương, ghi chú...">
+          </div>
+          <div class="search-summary" aria-live="polite">
+            <div class="summary-item">
+              <p class="summary-label">Tìm thấy</p>
+              <p id="searchCount" class="summary-value">0</p>
+            </div>
+            <div class="summary-item">
+              <p class="summary-label">Tổng chi</p>
+              <p id="searchExpense" class="summary-value expense-text">0đ</p>
+            </div>
+            <div class="summary-item">
+              <p class="summary-label">Tổng thu</p>
+              <p id="searchIncome" class="summary-value income-text">0đ</p>
+            </div>
+            <div class="summary-item">
+              <p class="summary-label">Chênh lệch</p>
+              <p id="searchBalance" class="summary-value balance-positive">0đ</p>
+            </div>
+          </div>
+          <div class="search-sections">
+            <div>
+              <div class="section-title">
+                <span>Danh mục liên quan</span>
+                <span id="searchCategoryCount" class="count">0 mục</span>
+              </div>
+              <p id="searchCategoryEmpty" class="empty">Nhập tên danh mục hoặc khoản chi để xem kết quả.</p>
+              <ul id="searchCategoryList" class="category-card-list"></ul>
+            </div>
+            <div>
+              <div class="section-title">
+                <span>Giao dịch tìm thấy</span>
+                <span id="searchTransactionCount" class="count">0 khoản</span>
+              </div>
+              <p id="searchEmpty" class="empty">Chưa có kết quả phù hợp.</p>
+              <ul id="searchResultList" class="transactions"></ul>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div id="categoryDetailOverlay" class="overlay" aria-hidden="true">
+      <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="categoryDetailTitle">
+        <div class="sheet-header">
+          <h2 id="categoryDetailTitle">Chi tiết danh mục</h2>
+          <button id="closeCategoryDetailButton" class="close-button" type="button" aria-label="Đóng chi tiết danh mục">×</button>
+        </div>
+        <p id="categoryDetailNote" class="detail-note"></p>
+        <div class="detail-stats" aria-live="polite">
+          <div class="summary-item">
+            <p class="summary-label">Tháng đang xem</p>
+            <p id="categoryMonthTotal" class="summary-value">0đ</p>
+          </div>
+          <div class="summary-item">
+            <p class="summary-label">Tất cả dữ liệu</p>
+            <p id="categoryAllTotal" class="summary-value">0đ</p>
+          </div>
+          <div class="summary-item">
+            <p class="summary-label">Số giao dịch</p>
+            <p id="categoryTransactionTotal" class="summary-value">0</p>
+          </div>
+          <div class="summary-item">
+            <p class="summary-label">Trung bình</p>
+            <p id="categoryAverage" class="summary-value">0đ</p>
+          </div>
+        </div>
+        <p id="categoryDetailEmpty" class="empty">Chưa có giao dịch trong danh mục này.</p>
+        <ul id="categoryDetailList" class="transactions"></ul>
+      </section>
+    </div>
+
     <nav class="bottom-nav" aria-label="Điều hướng chính">
       <button class="nav-button active" type="button" data-view-target="home" aria-label="Trang chủ">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 12 4l8 7v8a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path></svg>
@@ -1518,6 +1817,30 @@
     const monthlyReportList = document.getElementById("monthlyReportList");
     const categoryEmpty = document.getElementById("categoryEmpty");
     const categoryBreakdown = document.getElementById("categoryBreakdown");
+    const openSearchButton = document.getElementById("openSearchButton");
+    const searchOverlay = document.getElementById("searchOverlay");
+    const closeSearchButton = document.getElementById("closeSearchButton");
+    const searchInput = document.getElementById("searchInput");
+    const searchCount = document.getElementById("searchCount");
+    const searchExpense = document.getElementById("searchExpense");
+    const searchIncome = document.getElementById("searchIncome");
+    const searchBalance = document.getElementById("searchBalance");
+    const searchCategoryCount = document.getElementById("searchCategoryCount");
+    const searchCategoryEmpty = document.getElementById("searchCategoryEmpty");
+    const searchCategoryList = document.getElementById("searchCategoryList");
+    const searchTransactionCount = document.getElementById("searchTransactionCount");
+    const searchEmpty = document.getElementById("searchEmpty");
+    const searchResultList = document.getElementById("searchResultList");
+    const categoryDetailOverlay = document.getElementById("categoryDetailOverlay");
+    const closeCategoryDetailButton = document.getElementById("closeCategoryDetailButton");
+    const categoryDetailTitle = document.getElementById("categoryDetailTitle");
+    const categoryDetailNote = document.getElementById("categoryDetailNote");
+    const categoryMonthTotal = document.getElementById("categoryMonthTotal");
+    const categoryAllTotal = document.getElementById("categoryAllTotal");
+    const categoryTransactionTotal = document.getElementById("categoryTransactionTotal");
+    const categoryAverage = document.getElementById("categoryAverage");
+    const categoryDetailEmpty = document.getElementById("categoryDetailEmpty");
+    const categoryDetailList = document.getElementById("categoryDetailList");
     const transactionList = document.getElementById("transactionList");
     const emptyState = document.getElementById("emptyState");
     const transactionCount = document.getElementById("transactionCount");
@@ -1821,16 +2144,21 @@
         .reduce((sum, item) => sum + item.amount, 0);
     }
 
-    function getCategoryTotals() {
+    function getCategoryTotals(monthKey = getSelectedMonth()) {
       const totals = {};
-      getMonthTransactions()
+      transactions
+        .filter((item) => getMonthKey(item.date) === monthKey)
         .filter((item) => item.type === "expense")
         .forEach((item) => {
-          totals[item.category] = (totals[item.category] || 0) + item.amount;
+          if (!totals[item.category]) {
+            totals[item.category] = { amount: 0, count: 0 };
+          }
+          totals[item.category].amount += item.amount;
+          totals[item.category].count += 1;
         });
 
       return Object.entries(totals)
-        .map(([category, amount]) => ({ category, amount }))
+        .map(([category, value]) => ({ category, amount: value.amount, count: value.count }))
         .sort((a, b) => b.amount - a.amount);
     }
 
@@ -1845,6 +2173,121 @@
           }
           return totals;
         }, { income: 0, expense: 0 });
+    }
+
+    function normalizeText(value) {
+      return String(value || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d")
+        .trim();
+    }
+
+    function getCategoryType(category) {
+      if (CATEGORIES.income.some(([value]) => value === category)) return "income";
+      return "expense";
+    }
+
+    function getTransactionSearchText(item) {
+      return normalizeText([
+        item.name,
+        item.note,
+        item.date,
+        item.type === "income" ? "thu income" : "chi expense",
+        CATEGORY_LABELS[item.category] || "Khác"
+      ].join(" "));
+    }
+
+    function getCategoryTransactions(category) {
+      return transactions
+        .filter((item) => item.category === category)
+        .slice()
+        .sort((a, b) => b.date.localeCompare(a.date) || new Date(b.createdAt) - new Date(a.createdAt));
+    }
+
+    function getMonthCategoryTotal(category, monthKey = getSelectedReportMonth()) {
+      return transactions
+        .filter((item) => item.category === category && getMonthKey(item.date) === monthKey)
+        .reduce((sum, item) => sum + item.amount, 0);
+    }
+
+    function getSearchResults(query) {
+      const normalizedQuery = normalizeText(query);
+      if (!normalizedQuery) {
+        return { query: "", transactions: [], categories: [] };
+      }
+
+      const matchedTransactions = transactions.filter((item) => getTransactionSearchText(item).includes(normalizedQuery));
+      const matchedCategoryValues = new Set(matchedTransactions.map((item) => item.category));
+
+      [...CATEGORIES.expense, ...CATEGORIES.income].forEach(([value, label]) => {
+        if (normalizeText(label).includes(normalizedQuery)) {
+          matchedCategoryValues.add(value);
+        }
+      });
+
+      const categories = [...matchedCategoryValues]
+        .map((category) => {
+          const categoryTransactions = getCategoryTransactions(category);
+          const amount = categoryTransactions.reduce((sum, item) => sum + item.amount, 0);
+          const monthAmount = getMonthCategoryTotal(category, getSelectedMonth());
+          return {
+            category,
+            label: CATEGORY_LABELS[category] || "Khác",
+            type: getCategoryType(category),
+            amount,
+            monthAmount,
+            count: categoryTransactions.length
+          };
+        })
+        .sort((a, b) => b.amount - a.amount || a.label.localeCompare(b.label, "vi"));
+
+      return {
+        query: normalizedQuery,
+        transactions: matchedTransactions
+          .slice()
+          .sort((a, b) => b.date.localeCompare(a.date) || new Date(b.createdAt) - new Date(a.createdAt)),
+        categories
+      };
+    }
+
+    function createTransactionPreview(item) {
+      const li = document.createElement("li");
+      const isIncome = item.type === "income";
+      const dateText = new Intl.DateTimeFormat("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+      }).format(new Date(`${item.date}T12:00:00`));
+
+      li.className = `transaction ${isIncome ? "income" : "expense"}`;
+      li.innerHTML = `
+        <div class="transaction-main">
+          <p class="transaction-name"></p>
+          <p class="transaction-meta">${isIncome ? "Thu" : "Chi"} • ${CATEGORY_LABELS[item.category] || "Khác"} • ${dateText}</p>
+          ${item.note ? `<p class="transaction-note">${escapeHtml(item.note)}</p>` : ""}
+        </div>
+        <div class="transaction-side">
+          <span class="transaction-amount ${isIncome ? "income-text" : "expense-text"}">${isIncome ? "+" : "-"}${formatMoney(item.amount)}</span>
+        </div>
+      `;
+      li.querySelector(".transaction-name").textContent = item.name;
+      return li;
+    }
+
+    function openOverlay(overlay) {
+      overlay.classList.add("show");
+      overlay.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeOverlay(overlay) {
+      overlay.classList.remove("show");
+      overlay.setAttribute("aria-hidden", "true");
+      if (!document.querySelector(".overlay.show")) {
+        document.body.style.overflow = "";
+      }
     }
 
     function daysUntil(dateKey) {
@@ -1987,7 +2430,8 @@
     }
 
     function renderCategoryBreakdown() {
-      const categoryTotals = getCategoryTotals();
+      const reportMonth = getSelectedReportMonth();
+      const categoryTotals = getCategoryTotals(reportMonth);
       const maxAmount = categoryTotals.length ? categoryTotals[0].amount : 0;
       categoryBreakdown.innerHTML = "";
       categoryEmpty.style.display = categoryTotals.length ? "none" : "block";
@@ -1995,18 +2439,101 @@
       categoryTotals.forEach((item) => {
         const li = document.createElement("li");
         li.className = "category-row";
+        li.dataset.category = item.category;
+        li.tabIndex = 0;
+        li.setAttribute("role", "button");
+        li.setAttribute("aria-label", `Xem chi tiết danh mục ${CATEGORY_LABELS[item.category] || "Khác"}`);
         const percent = maxAmount ? Math.round((item.amount / maxAmount) * 100) : 0;
         li.innerHTML = `
           <div class="category-line">
             <span>${CATEGORY_LABELS[item.category] || "Khác"}</span>
             <span>${formatMoney(item.amount)}</span>
           </div>
+          <p class="category-card-meta">${item.count} giao dịch trong ${formatMonthLabel(reportMonth)}</p>
           <div class="category-bar" aria-hidden="true">
             <div class="category-bar-fill" style="width: ${percent}%"></div>
           </div>
         `;
         categoryBreakdown.appendChild(li);
       });
+    }
+
+    function renderSearchResults() {
+      const results = getSearchResults(searchInput.value);
+      const totalIncome = results.transactions
+        .filter((item) => item.type === "income")
+        .reduce((sum, item) => sum + item.amount, 0);
+      const totalExpense = results.transactions
+        .filter((item) => item.type === "expense")
+        .reduce((sum, item) => sum + item.amount, 0);
+      const balance = totalIncome - totalExpense;
+
+      searchCount.textContent = String(results.transactions.length);
+      searchIncome.textContent = formatMoney(totalIncome);
+      searchExpense.textContent = formatMoney(totalExpense);
+      searchBalance.textContent = formatMoney(balance);
+      searchBalance.className = `summary-value ${balance < 0 ? "balance-negative" : "balance-positive"}`;
+      searchCategoryCount.textContent = `${results.categories.length} mục`;
+      searchTransactionCount.textContent = `${results.transactions.length} khoản`;
+
+      searchCategoryList.innerHTML = "";
+      searchResultList.innerHTML = "";
+      searchCategoryEmpty.style.display = results.categories.length ? "none" : "block";
+      searchEmpty.style.display = results.transactions.length ? "none" : "block";
+      searchCategoryEmpty.textContent = results.query ? "Không tìm thấy danh mục phù hợp." : "Nhập tên danh mục hoặc khoản chi để xem kết quả.";
+      searchEmpty.textContent = results.query ? "Không có giao dịch nào khớp nội dung tìm kiếm." : "Chưa có kết quả phù hợp.";
+
+      results.categories.forEach((item) => {
+        const li = document.createElement("li");
+        const button = document.createElement("button");
+        button.className = `category-card ${item.type}`;
+        button.type = "button";
+        button.dataset.category = item.category;
+        button.innerHTML = `
+          <div class="category-card-head">
+            <span>${item.label}</span>
+            <span class="category-card-amount">${formatMoney(item.amount)}</span>
+          </div>
+          <p class="category-card-meta">${item.count} giao dịch tất cả dữ liệu • ${formatMoney(item.monthAmount)} trong tháng đang xem</p>
+        `;
+        li.appendChild(button);
+        searchCategoryList.appendChild(li);
+      });
+
+      results.transactions.slice(0, 30).forEach((item) => {
+        searchResultList.appendChild(createTransactionPreview(item));
+      });
+    }
+
+    function openCategoryDetail(category) {
+      const label = CATEGORY_LABELS[category] || "Khác";
+      const type = getCategoryType(category);
+      const items = getCategoryTransactions(category);
+      const monthKey = getSelectedReportMonth();
+      const monthItems = items.filter((item) => getMonthKey(item.date) === monthKey);
+      const monthAmount = monthItems.reduce((sum, item) => sum + item.amount, 0);
+      const allAmount = items.reduce((sum, item) => sum + item.amount, 0);
+      const average = items.length ? allAmount / items.length : 0;
+      const monthTotals = getMonthTotals(monthKey);
+      const baseTotal = type === "income" ? monthTotals.income : monthTotals.expense;
+      const percent = baseTotal ? Math.round((monthAmount / baseTotal) * 100) : 0;
+
+      categoryDetailTitle.textContent = label;
+      categoryDetailNote.textContent = `${type === "income" ? "Danh mục thu" : "Danh mục chi"} • ${formatMonthLabel(monthKey)} chiếm ${percent}% trong nhóm ${type === "income" ? "thu" : "chi"} của tháng.`;
+      categoryMonthTotal.textContent = formatMoney(monthAmount);
+      categoryAllTotal.textContent = formatMoney(allAmount);
+      categoryTransactionTotal.textContent = String(items.length);
+      categoryAverage.textContent = formatMoney(average);
+      categoryMonthTotal.className = `summary-value ${type === "income" ? "income-text" : "expense-text"}`;
+      categoryAllTotal.className = `summary-value ${type === "income" ? "income-text" : "expense-text"}`;
+      categoryDetailList.innerHTML = "";
+      categoryDetailEmpty.style.display = items.length ? "none" : "block";
+
+      items.slice(0, 50).forEach((item) => {
+        categoryDetailList.appendChild(createTransactionPreview(item));
+      });
+
+      openOverlay(categoryDetailOverlay);
     }
 
     function renderMonthlyReport() {
@@ -2243,6 +2770,7 @@
       renderHome();
       renderTransactions();
       renderLoans();
+      renderSearchResults();
     }
 
     function populateCategoryOptions() {
@@ -2438,6 +2966,55 @@
 
     typeInput.addEventListener("change", populateCategoryOptions);
     cancelEditButton.addEventListener("click", () => resetTransactionForm());
+
+    openSearchButton.addEventListener("click", () => {
+      openOverlay(searchOverlay);
+      renderSearchResults();
+      setTimeout(() => searchInput.focus(), 0);
+    });
+
+    closeSearchButton.addEventListener("click", () => closeOverlay(searchOverlay));
+    closeCategoryDetailButton.addEventListener("click", () => closeOverlay(categoryDetailOverlay));
+
+    searchOverlay.addEventListener("click", (event) => {
+      if (event.target === searchOverlay) {
+        closeOverlay(searchOverlay);
+      }
+    });
+
+    categoryDetailOverlay.addEventListener("click", (event) => {
+      if (event.target === categoryDetailOverlay) {
+        closeOverlay(categoryDetailOverlay);
+      }
+    });
+
+    searchInput.addEventListener("input", renderSearchResults);
+
+    searchCategoryList.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-category]");
+      if (!button) return;
+      openCategoryDetail(button.dataset.category);
+    });
+
+    categoryBreakdown.addEventListener("click", (event) => {
+      const row = event.target.closest("[data-category]");
+      if (!row) return;
+      openCategoryDetail(row.dataset.category);
+    });
+
+    categoryBreakdown.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      const row = event.target.closest("[data-category]");
+      if (!row) return;
+      event.preventDefault();
+      openCategoryDetail(row.dataset.category);
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      closeOverlay(searchOverlay);
+      closeOverlay(categoryDetailOverlay);
+    });
 
     [greetingInput, greetingColorInput, greetingSizeInput, greetingCardSizeInput, avatarSizeInput, showGreetingStatusInput].forEach((input) => {
       input.addEventListener("input", () => {
