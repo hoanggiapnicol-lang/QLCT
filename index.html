@@ -508,6 +508,13 @@
       transition: background 0.18s ease, transform 0.18s ease;
     }
 
+    .button-icon {
+      display: inline-block;
+      width: 19px;
+      height: 19px;
+      margin: 0 7px -4px 0;
+    }
+
     .primary-button:hover {
       background: var(--primary-dark);
     }
@@ -555,13 +562,6 @@
       display: block;
     }
 
-    .quick-actions {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
-    }
-
-    .quick-button,
     .secondary-button {
       min-height: 38px;
       border: 1px solid var(--border);
@@ -573,7 +573,6 @@
       padding: 7px 10px;
     }
 
-    .quick-button:hover,
     .secondary-button:hover {
       border-color: var(--primary);
       color: var(--primary);
@@ -1137,12 +1136,24 @@
 
     .edit-button,
     .delete-button {
-      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      min-height: 40px;
       border-radius: 8px;
       background: #ffffff;
       font-weight: 800;
       cursor: pointer;
-      padding: 6px 10px;
+      padding: 0;
+    }
+
+    .edit-button svg,
+    .delete-button svg {
+      width: 19px;
+      height: 19px;
+      pointer-events: none;
     }
 
     .edit-button {
@@ -1560,12 +1571,6 @@
             <input id="noteInput" type="text" autocomplete="off" placeholder="Ví dụ: Quán gần công ty">
           </label>
 
-          <div class="quick-actions full-width" aria-label="Chọn nhanh số tiền">
-            <button class="quick-button" type="button" data-amount="30000">30.000đ</button>
-            <button class="quick-button" type="button" data-amount="50000">50.000đ</button>
-            <button class="quick-button" type="button" data-amount="100000">100.000đ</button>
-          </div>
-
           <p id="formError" class="error full-width" role="alert"></p>
           <div class="form-actions full-width">
             <button id="submitButton" class="primary-button" type="submit">Thêm khoản</button>
@@ -1950,6 +1955,9 @@
       currency: "VND",
       maximumFractionDigits: 0
     });
+    const editIconSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20zM14 6l4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
+    const deleteIconSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 14h10l1-14M9 7V4h6v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
+    const saveIconSvg = '<svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h12l2 2v14H5zM8 4v6h8V4M8 20v-6h8v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path></svg>';
 
     function formatMoney(value) {
       return currencyFormatter.format(value).replace(/\s?₫/, "đ");
@@ -2816,9 +2824,9 @@
           ${loan.note ? `<p class="loan-note">${escapeHtml(loan.note)}</p>` : ""}
           <span class="status-chip ${statusInfo.className}">${statusInfo.text}</span>
           <div class="transaction-actions" style="margin-top: 10px;">
-            <button class="edit-button" type="button" data-id="${loan.id}" data-loan-action="edit">Sửa</button>
+            <button class="edit-button" type="button" data-id="${loan.id}" data-loan-action="edit" aria-label="Sửa khoản vay/nợ ${escapeHtml(loan.person)}" title="Sửa">${editIconSvg}</button>
             <button class="secondary-button" type="button" data-id="${loan.id}" data-loan-action="toggle">${loan.status === "paid" ? "Mở lại" : "Đã trả"}</button>
-            <button class="delete-button" type="button" data-id="${loan.id}" data-loan-action="delete">Xóa</button>
+            <button class="delete-button" type="button" data-id="${loan.id}" data-loan-action="delete" aria-label="Xóa khoản vay/nợ ${escapeHtml(loan.person)}" title="Xóa">${deleteIconSvg}</button>
           </div>
         `;
         li.querySelector(".loan-title").textContent = loan.person;
@@ -2857,8 +2865,8 @@
             <div class="transaction-side">
               <span class="transaction-amount ${isIncome ? "income-text" : "expense-text"}">${isIncome ? "+" : "-"}${formatMoney(item.amount)}</span>
               <div class="transaction-actions">
-                <button class="edit-button" type="button" data-id="${item.id}" aria-label="Sửa khoản ${escapeHtml(item.name)}">Sửa</button>
-                <button class="delete-button" type="button" data-id="${item.id}" aria-label="Xóa khoản ${escapeHtml(item.name)}">Xóa</button>
+                <button class="edit-button" type="button" data-id="${item.id}" aria-label="Sửa khoản ${escapeHtml(item.name)}" title="Sửa">${editIconSvg}</button>
+                <button class="delete-button" type="button" data-id="${item.id}" aria-label="Xóa khoản ${escapeHtml(item.name)}" title="Xóa">${deleteIconSvg}</button>
               </div>
             </div>
           `;
@@ -2957,7 +2965,7 @@
       dateInput.value = item.date;
       noteInput.value = item.note || "";
       formTitle.textContent = "Sửa khoản đã nhập";
-      submitButton.textContent = "Lưu thay đổi";
+      submitButton.innerHTML = `${saveIconSvg}Lưu thay đổi`;
       cancelEditButton.classList.add("show");
       clearError();
       form.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -3176,13 +3184,6 @@
         navButtons.forEach((navButton) => navButton.classList.toggle("active", navButton === button));
         homeOnlyBlocks.forEach((block) => block.classList.toggle("hidden", target !== "home"));
         window.scrollTo({ top: 0, behavior: "smooth" });
-      });
-    });
-
-    document.querySelectorAll(".quick-button").forEach((button) => {
-      button.addEventListener("click", () => {
-        amountInput.value = formatInputMoney(button.dataset.amount);
-        amountInput.focus();
       });
     });
 
