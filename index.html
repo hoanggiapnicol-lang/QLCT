@@ -1309,7 +1309,7 @@
 
     @media (min-width: 760px) {
       .page {
-        padding: 32px 22px 96px;
+        padding: 32px 22px 44px;
       }
 
       .app-header h1 {
@@ -1336,6 +1336,36 @@
 
       .summary-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .bottom-nav {
+        position: sticky;
+        top: 0;
+        left: auto;
+        bottom: auto;
+        z-index: 30;
+        width: 100%;
+        margin: 0 0 16px;
+        transform: none;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+      }
+
+      .nav-button {
+        min-height: 54px;
+        font-size: 0.9rem;
+      }
+
+      .nav-button svg {
+        display: inline-block;
+        margin: 0 6px -4px 0;
+      }
+
+      .fab-add {
+        right: max(24px, calc((100vw - 980px) / 2 + 24px));
+        bottom: 24px;
       }
 
       .filters,
@@ -1412,6 +1442,25 @@
         </div>
       </section>
     </header>
+
+    <nav class="bottom-nav" aria-label="Điều hướng chính">
+      <button class="nav-button active" type="button" data-view-target="home" aria-label="Trang chủ">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 12 4l8 7v8a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path></svg>
+        Trang chủ
+      </button>
+      <button class="nav-button" type="button" data-view-target="transactions" aria-label="Giao dịch">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10M7 12h10M7 17h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
+        Giao dịch
+      </button>
+      <button class="nav-button" type="button" data-view-target="reports" aria-label="Báo cáo">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19V9m7 10V5m7 14v-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
+        Báo cáo
+      </button>
+      <button class="nav-button" type="button" data-view-target="budget" aria-label="Ngân sách">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v10H4zM8 11h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        Ngân sách
+      </button>
+    </nav>
 
     <section id="homeView" class="app-view active single-view" data-view="home" aria-label="Trang chủ">
       <div class="panel greeting-card">
@@ -1742,24 +1791,6 @@
       </section>
     </div>
 
-    <nav class="bottom-nav" aria-label="Điều hướng chính">
-      <button class="nav-button active" type="button" data-view-target="home" aria-label="Trang chủ">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 12 4l8 7v8a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path></svg>
-        Trang chủ
-      </button>
-      <button class="nav-button" type="button" data-view-target="transactions" aria-label="Giao dịch">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10M7 12h10M7 17h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
-        Giao dịch
-      </button>
-      <button class="nav-button" type="button" data-view-target="reports" aria-label="Báo cáo">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19V9m7 10V5m7 14v-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
-        Báo cáo
-      </button>
-      <button class="nav-button" type="button" data-view-target="budget" aria-label="Ngân sách">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v10H4zM8 11h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-        Ngân sách
-      </button>
-    </nav>
     <button id="fabAddButton" class="fab-add" type="button" aria-label="Thêm khoản mới">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"></path>
